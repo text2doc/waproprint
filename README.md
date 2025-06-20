@@ -1,25 +1,160 @@
-# waproprint
-
-
-# WaproPrintSystem - System automatycznego drukowania dokumentów ZO z Wapro Mag
+# WaproPrint - System drukowania dokumentów z bazy Wapro
 
 ## Opis
 
-Prosty system monitorujący bazę danych Wapro Mag i automatycznie drukujący dokumenty Zamówień Odbiorcy (ZO) na drukarce termicznej. System działa jako usługa Windows, sprawdzając co 5 sekund (konfigurowalne) bazę danych w poszukiwaniu nowych dokumentów ZO i drukując je w formie PDF na wskazanej drukarce.
+System do automatycznego drukowania dokumentów z bazy danych Wapro Mag na różnych platformach (Windows/Linux). System monitoruje bazę danych w poszukiwaniu nowych dokumentów i drukuje je na podłączonych drukarkach termicznych lub sieciowych.
 
-Drukarka: 8.169
-PC:  8.20
+## Wymagania systemowe
 
-## Wymagania
-
+### Windows
 - Windows 10/11
 - Python 3.7 lub nowszy
 - Sterownik ODBC dla SQL Server
-- https://wapro.pl/dokumentacja-erp/desktop/docs/instalacja-programu/reczna-instalacja-serwera-baz/mg-instalacja-krok-po-kroku/
-- https://www.microsoft.com/en-us/download/details.aspx?id=101064
-- 
 - Drukarka termiczna (np. ZD421) skonfigurowana w systemie
 - Dostęp do bazy danych Wapro Mag
+
+### Linux (Ubuntu/Debian)
+- Ubuntu 20.04/22.04/25.04 lub inna dystrybucja z Python 3.7+
+- FreeTDS i unixODBC do połączenia z SQL Server
+- Drukarka sieciowa lub podłączona lokalnie
+- Dostęp do bazy danych Wapro Mag
+
+## Instalacja
+
+### 1. Pobranie kodu źródłowego
+
+```bash
+git clone https://github.com/text2doc/waproprint.git
+cd waproprint
+```
+
+### 2. Instalacja zależności systemowych (Linux/Ubuntu)
+
+```bash
+# Zainstaluj wymagane pakiety systemowe
+sudo apt-get update
+sudo apt-get install -y python3-pip python3-venv tdsodbc unixodbc unixodbc-dev \
+    freetds-dev freetds-bin dnsutils telnet arp-scan netdiscover nmap \
+    wkhtmltopdf imagemagick ghostscript
+
+# Utwórz i aktywuj środowisko wirtualne Pythona
+python3 -m venv venv
+source venv/bin/activate
+
+# Zainstaluj zależności Pythona
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 3. Konfiguracja FreeTDS (Linux/Ubuntu)
+
+Sprawdź czy plik `/etc/odbcinst.ini` zawiera wpis dla FreeTDS:
+
+```ini
+[FreeTDS]
+Description = FreeTDS Driver
+Driver = /usr/lib/x86_64-linux-gnu/odbc/libtdsodbc.so
+Setup = /usr/lib/x86_64-linux-gnu/odbc/libtdsS.so
+FileUsage = 1
+```
+
+### 4. Konfiguracja połączenia z bazą danych
+
+Edytuj plik `config.ini` i ustaw odpowiednie parametry połączenia:
+
+```ini
+[DATABASE]
+# Użyj FreeTDS jako sterownika na Linuxie
+driver = FreeTDS
+# Adres IP lub nazwa hosta serwera SQL
+server = adres_serwera
+# Nazwa bazy danych
+database = WAPRO_DEMO
+# Dane logowania
+trusted_connection = no
+username = twoj_uzytkownik
+password = twoje_haslo
+
+[PRINTING]
+# Konfiguracja drukarki
+printer_name = TWOJA_DRUKARKA
+# Katalog tymczasowy do przechowywania plików PDF
+temp_folder = /tmp/waproprint
+# Częstotliwość sprawdzania nowych zamówień (w sekundach)
+check_interval = 5
+```
+
+## Testowanie połączenia z bazą danych
+
+System zawiera skrypt do testowania połączenia z bazą danych:
+
+```bash
+# W katalogu projektu, z aktywowanym środowiskiem wirtualnym:
+python test_db_connection.py
+```
+
+Skrypt wyświetli szczegółowe informacje o próbie połączenia i ewentualnych błędach.
+
+## Rozwiązywanie problemów
+
+### Problem z połączeniem do bazy danych
+1. Sprawdź czy serwer SQL jest dostępny z Twojego komputera:
+   ```bash
+   telnet adres_serwera 1433
+   ```
+2. Sprawdź konfigurację FreeTDS w pliku `/etc/freetds/freetds.conf`
+3. Upewnij się, że użytkownik ma uprawnienia do łączenia się z bazą danych
+
+### Problem z drukowaniem
+1. Sprawdź czy drukarka jest dostępna w sieci
+2. Upewnij się, że port drukarki (zazwyczaj 9100) nie jest zablokowany przez zaporę sieciową
+3. Sprawdź logi systemowe pod kątem błędów związanych z drukowaniem
+
+## Uruchamianie systemu
+
+```bash
+# Aktywuj środowisko wirtualne
+source venv/bin/activate
+
+# Uruchom główny skrypt
+python waproprint.py
+```
+
+## Konfiguracja usługi systemowej (Linux)
+
+Aby uruchomić system jako usługa systemd, utwórz plik `/etc/systemd/system/waproprint.service`:
+
+```ini
+[Unit]
+Description=WaproPrint Service
+After=network.target
+
+[Service]
+User=twoj_uzytkownik
+WorkingDirectory=/sciezka/do/waproprint
+Environment="PATH=/sciezka/do/waproprint/venv/bin"
+ExecStart=/sciezka/do/waproprint/venv/bin/python /sciezka/do/waproprint/waproprint.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Następnie włącz i uruchom usługę:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable waproprint
+sudo systemctl start waproprint
+```
+
+## Licencja
+
+Ten projekt jest dostępny na licencji MIT. Szczegóły znajdują się w pliku LICENSE.
+
+## Wsparcie
+
+W przypadku pytań lub problemów, prosimy o zgłoszenie problemu w repozytorium projektu.
 
 ## Instalacja
 
