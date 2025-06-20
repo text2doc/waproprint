@@ -9,7 +9,8 @@ packages = [
     { include = "waproprint" },
     { include = "zpl", from = "." },
     { include = "lib" },
-    { include = "html2pdf3.py" }
+    { include = "html2pdf3.py" },
+    { include = "thermal_printer.py" }
 ]
 include = [
     "*.py",
@@ -36,6 +37,9 @@ pypdf2 = ">=2.0.0"
 html2image = ">=2.0.3.3"
 playwright = "^1.42.0"
 html2text = "^2020.1.16"
+tabulate = "^0.9.0"
+cssutils = "^2.9.0"
+tinycss = "^0.4"
 
 [build-system]
 requires = ["poetry-core"]

@@ -16,19 +16,62 @@ logger = get_logger().getLogger(__name__)
 class ConfigManager:
     """Klasa zarządzająca konfiguracją aplikacji"""
 
-    def __init__(self, config_file="config.ini"):
-        self.config_file = config_file
+    def __init__(self, config_file=None):
+        # Try to find config.ini in multiple locations
+        if config_file is None:
+            # 1. Check current working directory
+            cwd_config = os.path.join(os.getcwd(), 'config.ini')
+            # 2. Check script directory (where this file is located)
+            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            script_config = os.path.join(script_dir, 'config.ini')
+            
+            if os.path.exists(cwd_config):
+                self.config_file = cwd_config
+            elif os.path.exists(script_config):
+                self.config_file = script_config
+            else:
+                # Default to current working directory
+                self.config_file = 'config.ini'
+                logger.warning(f"Using default config file path: {self.config_file}")
+        else:
+            self.config_file = config_file
+            
         self.config = configparser.ConfigParser()
-        self.load_config()
+        try:
+            self.load_config()
+        except FileNotFoundError as e:
+            logger.error(f"Failed to load configuration: {e}")
+            logger.info(f"Current working directory: {os.getcwd()}")
+            logger.info(f"Script directory: {os.path.dirname(os.path.abspath(__file__))}")
+            raise
 
     def load_config(self):
         """Wczytuje konfigurację z pliku"""
+        # Try to find the config file in multiple locations
         if not os.path.exists(self.config_file):
-            logger.error(f"Plik konfiguracyjny {self.config_file} nie istnieje.")
-            raise FileNotFoundError(f"Plik konfiguracyjny {self.config_file} nie istnieje.")
+            # Try to find config.ini in the same directory as this script
+            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            script_config = os.path.join(script_dir, 'config.ini')
+            
+            if os.path.exists(script_config):
+                self.config_file = script_config
+                logger.info(f"Using config file from script directory: {self.config_file}")
+            else:
+                error_msg = f"Config file not found at any of these locations:\n"
+                error_msg += f"1. {os.path.abspath(self.config_file)}\n"
+                error_msg += f"2. {script_config}"
+                logger.error(error_msg)
+                raise FileNotFoundError(f"Plik konfiguracyjny nie został znaleziony w żadnej z lokalizacji: {error_msg}")
 
+        # Read the config file with explicit UTF-8 encoding
         self.config.read(self.config_file, encoding='utf-8')
-        logger.info(f"Wczytano konfigurację z pliku {self.config_file}")
+        logger.info(f"Wczytano konfigurację z pliku: {os.path.abspath(self.config_file)}")
+        
+        # Verify required sections exist
+        required_sections = ['DATABASE', 'PRINTING']
+        for section in required_sections:
+            if section not in self.config:
+                logger.warning(f"Brak wymaganej sekcji w pliku konfiguracyjnym: {section}")
 
     def get_connection_string(self):
         """Zwraca ciąg połączenia do bazy danych"""
