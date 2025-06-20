@@ -50,11 +50,31 @@ if [[ "$OS" == *"Debian"* ]] || [[ "$OS" == *"Ubuntu"* ]]; then
     # Install SQL Server ODBC driver
     if ! command -v sqlcmd &> /dev/null; then
         status "Installing Microsoft SQL Server ODBC driver..."
-        curl https://packages.microsoft.com/keys/microsoft.asc | $SUDO apt-key add -
-        curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list | $SUDO tee /etc/apt/sources.list.d/mssql-release.list
+        
+        # For Ubuntu 22.04+ and Debian 11+ which don't have apt-key by default
+        if ! command -v gpg &> /dev/null; then
+            $SUDO apt-get install -y gpg
+        fi
+        
+        # Download and add Microsoft repository key
+        $SUDO mkdir -p /etc/apt/keyrings
+        curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | $SUDO tee /etc/apt/keyrings/microsoft.gpg > /dev/null
+        
+        # Add Microsoft repository
+        CODENAME=$(lsb_release -cs)
+        echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/ubuntu/$CODENAME/prod $CODENAME main" | $SUDO tee /etc/apt/sources.list.d/mssql-release.list
+        
         $SUDO apt-get update
         $SUDO ACCEPT_EULA=Y apt-get install -y msodbcsql18
         $SUDO apt-get install -y unixodbc-dev
+        
+        # Verify installation
+        if command -v sqlcmd &> /dev/null; then
+            status "Microsoft SQL Server ODBC driver installed successfully"
+        else
+            warning "Failed to install SQL Server ODBC driver. Manual installation may be required."
+            warning "See: https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server"
+        fi
     else
         status "Microsoft SQL Server ODBC driver is already installed"
     fi
