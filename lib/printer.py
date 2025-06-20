@@ -3,10 +3,22 @@
 # lib/Printer.py
 
 import os
+import sys
 import logging
 import subprocess
 import time
-import win32print
+
+# Windows-specific imports
+try:
+    import win32print
+    WIN32_AVAILABLE = True
+except ImportError:
+    WIN32_AVAILABLE = False
+    if sys.platform == 'win32':
+        logging.warning("pywin32 is not installed. Windows printing functionality will be disabled.")
+    else:
+        logging.info("Non-Windows platform detected. Windows printing functionality is not available.")
+
 from thermal_printer import ThermalPrinterManager
 
 

@@ -8,7 +8,8 @@ license = "MIT"
 packages = [
     { include = "waproprint" },
     { include = "zpl", from = "." },
-    { include = "lib" }
+    { include = "lib" },
+    { include = "html2pdf3.py" }
 ]
 include = [
     "*.py",
@@ -33,6 +34,8 @@ wand = ">=0.6.7"
 reportlab = ">=3.6.8"
 pypdf2 = ">=2.0.0"
 html2image = ">=2.0.3.3"
+playwright = "^1.42.0"
+html2text = "^2020.1.16"
 
 [build-system]
 requires = ["poetry-core"]

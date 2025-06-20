@@ -62,6 +62,7 @@ check-format: ## Check code formatting
 # Build and publish
 build: ## Build the package
 	@echo "${GREEN}Building package...${RESET}"
+	poetry version patch
 	poetry build
 
 publish: ## Publish the package to PyPI
