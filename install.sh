@@ -23,12 +23,17 @@ warning() {
     echo -e "${YELLOW}[!] Warning: $1${NC}"
 }
 
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then 
     warning "Not running as root. Some commands might need sudo privileges."
-    SUDO=""
-else
     SUDO="sudo"
+else
+    SUDO=""
 fi
 
 # Detect Linux distribution
@@ -36,18 +41,196 @@ if [ -f /etc/os-release ]; then
     . /etc/os-release
     OS=$NAME
     VER=$VERSION_ID
+    OS_ID=$ID
 else
     error "Could not detect Linux distribution. This script supports Debian/Ubuntu and RedHat/CentOS."
 fi
 
 # Install system dependencies
-status "Detected OS: $OS $VER"
+status "Detected OS: $OS $VER ($OS_ID)"
 
-# Remove any existing Microsoft repository to prevent conflicts
-$SUDO rm -f /etc/apt/sources.list.d/mssql-release.list \
-           /etc/apt/sources.list.d/msprod.list \
-           /etc/apt/trusted.gpg.d/microsoft* \
-           /usr/share/keyrings/microsoft* \
+# Update package lists
+status "Updating package lists"
+if [ "$OS_ID" = "ubuntu" ] || [ "$OS_ID" = "debian" ]; then
+    $SUDO apt-get update
+elif [ "$OS_ID" = "rhel" ] || [ "$OS_ID" = "centos" ]; then
+    $SUDO yum check-update || true
+else
+    warning "Unsupported distribution. Trying to continue with common packages..."
+fi
+
+# Install required system packages
+status "Installing required system packages"
+if [ "$OS_ID" = "ubuntu" ] || [ "$OS_ID" = "debian" ]; then
+    $SUDO apt-get install -y \
+        python3-pip \
+        python3-venv \
+        tdsodbc \
+        unixodbc \
+        unixodbc-dev \
+        freetds-dev \
+        freetds-bin \
+        wkhtmltopdf \
+        imagemagick \
+        ghostscript \
+        libmagickwand-dev \
+        libcups2-dev \
+        build-essential \
+        libssl-dev \
+        libffi-dev \
+        python3-dev \
+        dnsutils \
+        telnet \
+        arp-scan \
+        netdiscover \
+        nmap || warning "Failed to install some packages"
+elif [ "$OS_ID" = "rhel" ] || [ "$OS_ID" = "centos" ]; then
+    $SUDO yum install -y \
+        python3-pip \
+        python3-virtualenv \
+        unixODBC \
+        unixODBC-devel \
+        freetds \
+        freetds-devel \
+        wkhtmltopdf \
+        ImageMagick \
+        ghostscript \
+        gcc \
+        openssl-devel \
+        libffi-devel \
+        python3-devel \
+        bind-utils \
+        nmap-ncat \
+        nmap || warning "Failed to install some packages"
+fi
+
+# Configure FreeTDS
+status "Configuring FreeTDS"
+if [ -f /etc/odbcinst.ini ]; then
+    $SUDO cp /etc/odbcinst.ini /etc/odbcinst.ini.bak
+fi
+
+$SUDO tee /etc/odbcinst.ini > /dev/null <<EOL
+[FreeTDS]
+Description = FreeTDS Driver
+Driver = /usr/lib/x86_64-linux-gnu/odbc/libtdsodbc.so
+Setup = /usr/lib/x86_64-linux-gnu/odbc/libtdsS.so
+FileUsage = 1
+EOL
+
+# Create virtual environment
+status "Setting up Python virtual environment"
+python3 -m venv venv || error "Failed to create virtual environment"
+source venv/bin/activate || error "Failed to activate virtual environment"
+
+# Upgrade pip
+status "Upgrading pip"
+pip install --upgrade pip || warning "Failed to upgrade pip"
+
+# Install Poetry if not installed
+if ! command_exists poetry; then
+    status "Installing Poetry"
+    curl -sSL https://install.python-poetry.org | python3 - || error "Failed to install Poetry"
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# Install project with Poetry
+status "Installing project dependencies with Poetry"
+poetry install || error "Failed to install project dependencies"
+
+# Create necessary directories
+status "Creating necessary directories"
+mkdir -p logs temp
+
+# Set permissions
+status "Setting permissions"
+chmod +x *.py
+chmod +x *.sh
+
+# Create .env file if it doesn't exist
+if [ ! -f .env ]; then
+    status "Creating .env file"
+    cat > .env <<EOL
+# Database configuration
+DB_SERVER=your_server_address
+DB_NAME=your_database_name
+DB_USER=your_username
+DB_PASSWORD=your_password
+
+# Application settings
+TEMP_DIR=./temp
+LOG_LEVEL=INFO
+EOL
+    warning "Created .env file. Please update it with your configuration."
+fi
+
+# Create config.ini if it doesn't exist
+if [ ! -f config.ini ]; then
+    status "Creating config.ini"
+    cat > config.ini <<EOL
+[DATABASE]
+driver = FreeTDS
+server = your_server_address
+database = your_database_name
+trusted_connection = no
+username = your_username
+password = your_password
+
+[PRINTING]
+printer_name = YOUR_PRINTER
+temp_folder = ./temp
+check_interval = 5
+EOL
+    warning "Created config.ini. Please update it with your configuration."
+fi
+
+# Install systemd service if requested
+read -p "Do you want to install as a systemd service? [y/N] " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    status "Installing systemd service"
+    
+    # Get the current user and working directory
+    SERVICE_USER=$(whoami)
+    WORKING_DIR=$(pwd)
+    
+    # Create systemd service file
+    $SUDO tee /etc/systemd/system/waproprint.service > /dev/null <<EOL
+[Unit]
+Description=WaproPrint Service
+After=network.target
+
+[Service]
+User=$SERVICE_USER
+WorkingDirectory=$WORKING_DIR
+Environment="PATH=$WORKING_DIR/venv/bin"
+ExecStart=$WORKING_DIR/venv/bin/python $WORKING_DIR/main.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+    # Reload systemd and enable service
+    $SUDO systemctl daemon-reload
+    $SUDO systemctl enable waproprint
+    
+    echo -e "${GREEN}Service installed and enabled. To start the service, run:${NC}"
+    echo "$SUDO systemctl start waproprint"
+    echo -e "${GREEN}To view logs:${NC}"
+    echo "$SUDO journalctl -u waproprint -f"
+fi
+
+# Print success message
+echo -e "\n${GREEN}Installation completed successfully!${NC}"
+echo -e "To activate the virtual environment, run:${NC}"
+echo "source venv/bin/activate"
+echo -e "\nTo run the application:${NC}"
+echo "python main.py"
+
+if [ -f .env ]; then
+    echo -e "${YELLOW}Don't forget to update your .env and config.ini files with your configuration.${NC}"
+fi
            /etc/apt/sources.list.d/microsoft* \
            /etc/apt/trusted.gpg.d/microsoft* \
            /etc/apt/trusted.gpg.d/prod_* \
