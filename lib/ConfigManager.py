@@ -83,15 +83,16 @@ class ConfigManager:
             trusted_connection = self.config['DATABASE'].getboolean('trusted_connection', fallback=False)
             timeout = self.config['DATABASE'].get('timeout', fallback='30')
             encrypt = self.config['DATABASE'].get('encrypt', fallback='no')
+            driver = self.config['DATABASE'].get('driver', fallback='FreeTDS')
 
-            # Używamy Native Client zamiast standardowego sterownika SQL Server
+            # Używamy FreeTDS jako domyślnego sterownika
             if trusted_connection:
-                connection_string = f"DRIVER={{SQL Server Native Client 11.0}};SERVER={server};DATABASE={database};Trusted_Connection=yes;"
+                connection_string = f"DRIVER={{{driver}}};SERVER={server};DATABASE={database};Trusted_Connection=yes;"
             else:
-                connection_string = f"DRIVER={{SQL Server Native Client 11.0}};SERVER={server};DATABASE={database};UID={username};PWD={password};"
+                connection_string = f"DRIVER={{{driver}}};SERVER={server};DATABASE={database};UID={username};PWD={password};"
 
-            # Dodajemy dodatkowe parametry
-            connection_string += f";timeout={timeout};encrypt={encrypt};"
+            # Dodajemy dodatkowe parametry specyficzne dla FreeTDS
+            connection_string += f";TDS_Version=7.4;Port=1433;timeout={timeout};encrypt={encrypt};"
 
             logger.info(f"Wygenerowany string połączenia: {connection_string}")
             return connection_string
