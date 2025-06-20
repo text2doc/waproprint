@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "waproprint"
-version = "0.1.0"
+version = "0.1.1"
 description = "A tool for generating and printing documents from database queries"
 authors = ["Tom"]
 readme = "README.md"

@@ -65,15 +65,8 @@ build: ## Build the package
 	poetry version patch
 	poetry build
 
-publish: ## Publish the package to PyPI
-	@echo "${YELLOW}Are you sure you want to publish to PyPI? [y/N] ${RESET}"
-	@read -p "" confirm; \
-	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
-		echo "${GREEN}Publishing to PyPI...${RESET}"; \
-		poetry publish --build; \
-	else \
-		echo "${YELLOW}Publishing cancelled${RESET}"; \
-	fi
+publish: build
+	poetry publish
 
 # Cleanup
 clean: ## Clean up build artifacts
