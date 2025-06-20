@@ -296,8 +296,8 @@ Jeśli chcesz użyć harmonogramu zadań Windows, skonfiguruj go do uruchamiania
    - Kliknij "Nowy..."
    - Akcja: "Uruchom program"
    - Program/skrypt: `python`
-   - Dodaj argumenty: `C:\Users\INTEL\wapromag\sql2html.py`
-   - Rozpocznij w: `C:\Users\INTEL\wapromag`
+   - Dodaj argumenty: `C:\Users\[USERNAME]\wapromag\sql2html.py`
+   - Rozpocznij w: `C:\Users\[USERNAME]\wapromag`
    - Kliknij OK
 
 5. **Ustaw dodatkowe opcje**:
@@ -319,7 +319,7 @@ Możesz utworzyć prosty skrypt .bat z pętlą nieskończoną:
 @echo off
 :loop
     echo Uruchamianie sql2html.py...
-    python C:\Users\INTEL\wapromag\sql2html.py
+    python C:\Users\[USERNAME]\wapromag\sql2html.py
     timeout /t 5 /nobreak
 goto loop
 ```
@@ -463,8 +463,8 @@ Jeśli chcesz użyć harmonogramu zadań Windows, skonfiguruj go do uruchamiania
    - Kliknij "Nowy..."
    - Akcja: "Uruchom program"
    - Program/skrypt: `python`
-   - Dodaj argumenty: `C:\Users\INTEL\wapromag\sql2html.py`
-   - Rozpocznij w: `C:\Users\INTEL\wapromag`
+   - Dodaj argumenty: `C:\Users\[USERNAME]\wapromag\sql2html.py`
+   - Rozpocznij w: `C:\Users\[USERNAME]\wapromag`
    - Kliknij OK
 
 5. **Ustaw dodatkowe opcje**:
@@ -486,7 +486,7 @@ Możesz utworzyć prosty skrypt .bat z pętlą nieskończoną:
 @echo off
 :loop
     echo Uruchamianie sql2html.py...
-    python C:\Users\INTEL\wapromag\sql2html.py
+    python C:\Users\[USERNAME]\wapromag\sql2html.py
     timeout /t 5 /nobreak
 goto loop
 ```
@@ -964,7 +964,7 @@ venv\Scripts\activate
 2. Install requirements:
    ```bash
    pip install --upgrade pip
-   C:\Users\INTEL\wapromag\venv\Scripts\python.exe -m pip install --upgrade pip
+   C:\Users\[USERNAME]\wapromag\venv\Scripts\python.exe -m pip install --upgrade pip
    pip install -r requirements.txt
    ```
 
