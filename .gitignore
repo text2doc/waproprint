@@ -2,6 +2,7 @@
 venv
 .idea
 *.log
+config2.ini
 config.ini
 poetry.lock
 # Byte-compiled / optimized / DLL files

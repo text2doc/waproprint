@@ -60,7 +60,7 @@ status "Installing system dependencies..."
 if [[ "$OS" == *"Debian"* ]] || [[ "$OS" == *"Ubuntu"* ]]; then
     # Install FreeTDS as the ODBC driver (works with SQL Server)
     status "Installing FreeTDS ODBC driver..."
-    $SUDO apt-get install -y tdsodbc unixodbc unixodbc-dev freetds-dev freetds-bin
+    $SUDO apt-get install -y tdsodbc unixodbc unixodbc-dev freetds-dev freetds-bin dnsutils telnet
     
     # Configure FreeTDS
     if [ -f "/etc/odbcinst.ini" ]; then
