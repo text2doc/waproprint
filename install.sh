@@ -47,6 +47,19 @@ $SUDO apt-get update
 
 status "Installing system dependencies..."
 if [[ "$OS" == *"Debian"* ]] || [[ "$OS" == *"Ubuntu"* ]]; then
+    # Install SQL Server ODBC driver
+    if ! command -v sqlcmd &> /dev/null; then
+        status "Installing Microsoft SQL Server ODBC driver..."
+        curl https://packages.microsoft.com/keys/microsoft.asc | $SUDO apt-key add -
+        curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list | $SUDO tee /etc/apt/sources.list.d/mssql-release.list
+        $SUDO apt-get update
+        $SUDO ACCEPT_EULA=Y apt-get install -y msodbcsql18
+        $SUDO apt-get install -y unixodbc-dev
+    else
+        status "Microsoft SQL Server ODBC driver is already installed"
+    fi
+
+    # Install other system dependencies
     $SUDO apt-get install -y --no-install-recommends \
         python3 \
         python3-pip \

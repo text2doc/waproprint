@@ -28,7 +28,7 @@ from zebrafy import ZebrafyPDF
 
 
 # Import nowego modułu do obsługi drukowania ZPL
-from zpl.zpl_printer import print_zpl_to_network_printer, list_zpl_files
+from zpl.network_printer import print_zpl_to_network_printer, list_zpl_files
 
 
 # Obsługa przerwania skryptu

@@ -111,7 +111,7 @@ HTML2ZPL może być łatwo zintegrowany z istniejącymi systemami biznesowymi. O
 
 ```python
 from zpl_converter import HtmlToZpl
-from zpl_printer import print_raw_zpl
+from network_printer import print_raw_zpl
 
 def drukuj_zamowienie(numer_zamowienia, html_zamowienia, drukarka="ZDesigner GK420d"):
     # Utwórz konwerter
@@ -138,7 +138,7 @@ Możesz skonfigurować skrypt tak, aby automatycznie przetwarzał i drukował do
 import os
 import time
 from zpl_converter import HtmlToZpl
-from zpl_printer import print_raw_zpl
+from network_printer import print_raw_zpl
 
 def monitoruj_folder_i_drukuj(folder_path, drukarka):
     while True:
