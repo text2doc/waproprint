@@ -120,7 +120,19 @@ EOL
 
 # Create virtual environment
 status "Setting up Python virtual environment"
-python3 -m venv venv || error "Failed to create virtual environment"
+# Remove existing venv if it exists
+if [ -d "venv" ]; then
+    status "Removing existing virtual environment"
+    rm -rf venv || sudo rm -rf venv
+fi
+
+# Create venv with appropriate permissions
+python3 -m venv venv || {
+    status "Trying with sudo..."
+    sudo python3 -m venv venv || error "Failed to create virtual environment"
+    sudo chown -R $(whoami):$(id -gn) venv || error "Failed to set permissions on virtual environment"
+}
+
 source venv/bin/activate || error "Failed to activate virtual environment"
 
 # Upgrade pip
