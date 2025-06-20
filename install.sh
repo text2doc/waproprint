@@ -42,41 +42,44 @@ fi
 
 # Install system dependencies
 status "Detected OS: $OS $VER"
+
+# Remove any existing Microsoft repository to prevent conflicts
+$SUDO rm -f /etc/apt/sources.list.d/mssql-release.list \
+           /etc/apt/sources.list.d/msprod.list \
+           /etc/apt/trusted.gpg.d/microsoft* \
+           /usr/share/keyrings/microsoft* \
+           /etc/apt/sources.list.d/microsoft* \
+           /etc/apt/trusted.gpg.d/microsoft* \
+           /etc/apt/trusted.gpg.d/prod_* \
+           /etc/apt/sources.list.d/prod_*
+
 status "Updating package lists..."
 $SUDO apt-get update
 
 status "Installing system dependencies..."
 if [[ "$OS" == *"Debian"* ]] || [[ "$OS" == *"Ubuntu"* ]]; then
-    # Install SQL Server ODBC driver
-    if ! command -v sqlcmd &> /dev/null; then
-        status "Installing Microsoft SQL Server ODBC driver..."
-        
-        # For Ubuntu 22.04+ and Debian 11+ which don't have apt-key by default
-        if ! command -v gpg &> /dev/null; then
-            $SUDO apt-get install -y gpg
-        fi
-        
-        # Download and add Microsoft repository key
-        $SUDO mkdir -p /etc/apt/keyrings
-        curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | $SUDO tee /etc/apt/keyrings/microsoft.gpg > /dev/null
-        
-        # Add Microsoft repository
-        CODENAME=$(lsb_release -cs)
-        echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/ubuntu/$CODENAME/prod $CODENAME main" | $SUDO tee /etc/apt/sources.list.d/mssql-release.list
-        
-        $SUDO apt-get update
-        $SUDO ACCEPT_EULA=Y apt-get install -y msodbcsql18
-        $SUDO apt-get install -y unixodbc-dev
-        
-        # Verify installation
-        if command -v sqlcmd &> /dev/null; then
-            status "Microsoft SQL Server ODBC driver installed successfully"
-        else
-            warning "Failed to install SQL Server ODBC driver. Manual installation may be required."
-            warning "See: https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server"
-        fi
+    # Install FreeTDS as the ODBC driver (works with SQL Server)
+    status "Installing FreeTDS ODBC driver..."
+    $SUDO apt-get install -y tdsodbc unixodbc unixodbc-dev freetds-dev freetds-bin
+    
+    # Configure FreeTDS
+    if [ -f "/etc/odbcinst.ini" ]; then
+        status "Configuring ODBC driver..."
+        cat <<EOF | $SUDO tee /etc/odbcinst.ini > /dev/null
+[FreeTDS]
+Description=FreeTDS Driver
+Driver=/usr/lib/x86_64-linux-gnu/odbc/libtdsodbc.so
+Setup=/usr/lib/x86_64-linux-gnu/odbc/libtdsS.so
+UsageCount=1
+EOF
+    fi
+    
+    # Verify installation
+    if odbcinst -q -d -n "FreeTDS" &> /dev/null; then
+        status "ODBC driver configured successfully"
     else
-        status "Microsoft SQL Server ODBC driver is already installed"
+        warning "Failed to verify ODBC driver configuration. Manual configuration may be needed."
+        warning "See: https://www.freetds.org/userguide/odbcconnattr.html"
     fi
 
     # Install other system dependencies
