@@ -1,0 +1,12 @@
+beautifulsoup4>=4.9.3
+pywin32>=300; sys_platform == 'win32'
+pyodbc
+reportlab
+tabulate
+pdf2image
+pillow
+python-barcode
+beautifulsoup4>=4.9.3
+cssutils>=2.6.0
+tinycss>=0.4
+lxml>=4.9.2

@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Zapytanie do pobierania zamówienia
+GET_ORDER_QUERY = """
+    SELECT * FROM ZAMOWIENIE Z
+    LEFT JOIN KONTRAHENT K ON Z.ID_KONTRAHENTA = K.ID_KONTRAHENTA
+    WHERE Z.NUMER = ?
+"""
+
+# Zapytanie do pobierania wszystkich zamówień
+GET_ALL_ORDERS_QUERY = """
+    SELECT * FROM ZAMOWIENIE Z
+    LEFT JOIN KONTRAHENT K ON Z.ID_KONTRAHENTA = K.ID_KONTRAHENTA
+    ORDER BY Z.ID_ZAMOWIENIA
+"""
+
+# Zapytanie do pobierania pozycji zamówienia
+GET_ORDER_ITEMS_QUERY = """
+    SELECT * FROM POZYCJA_ZAMOWIENIA PZ
+    LEFT JOIN ARTYKUL A ON PZ.ID_ARTYKULU = A.ID_ARTYKULU
+    WHERE PZ.ID_ZAMOWIENIA = ?
+"""
+
+# Zapytanie do pobierania dzisiejszych zamówień
+GET_TODAYS_ORDERS_QUERY = """
+    SELECT * FROM ZAMOWIENIE Z
+    LEFT JOIN KONTRAHENT K ON Z.ID_KONTRAHENTA = K.ID_KONTRAHENTA
+    WHERE CAST(Z.DATA_UTWORZENIA_WIERSZA AS date) = CAST(GETDATE() AS date)
+    ORDER BY Z.DATA_UTWORZENIA_WIERSZA ASC
+""" 
