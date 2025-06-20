@@ -16,7 +16,7 @@ except ImportError:
     if sys.platform == 'win32':
         logging.warning("pywin32 is not installed. Windows printing functionality will be disabled.")
     else:
-        logging.info("Non-Windows platform detected. Windows printing functionality is not available."
+        logging.info("Non-Windows platform detected. Windows printing functionality is not available.")
 
 # thermal_printer.py
 
