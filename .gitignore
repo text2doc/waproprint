@@ -3,6 +3,7 @@ venv
 .idea
 *.log
 config.ini
+poetry.lock
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
