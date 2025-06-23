@@ -13,8 +13,10 @@ logger = get_logger().getLogger(__name__)
 
 # Add a console handler to the logger
 console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.ERROR)  # Set to ERROR level for database errors
-console_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Set to ERROR level for database errors
+console_handler.setLevel(logging.ERROR)
+console_formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(console_formatter)
 logger.addHandler(console_handler)
 
@@ -48,7 +50,8 @@ class DatabaseManager:
             reader = DatabaseSchemaReader(self.connection_string)
             self.database_schema = reader.get_all_tables_and_columns()
             logger.info("Database schema read successfully.")
-            logger.debug(f"Database schema: {self.database_schema}")  # Log the schema for debugging
+            # Log the schema for debugging
+            logger.debug(f"Database schema: {self.database_schema}")
         except Exception as e:
             logger.error(f"Error reading database schema: {e}", exc_info=True)
             # Consider re-raising the exception or handling it appropriately
@@ -60,7 +63,8 @@ class DatabaseManager:
             try:
                 import pyodbc
             except ImportError:
-                print("The 'pyodbc' module is not installed. Please install it using 'pip install pyodbc'.")
+                print(
+                    "The 'pyodbc' module is not installed. Please install it using 'pip install pyodbc'.")
                 sys.exit(1)
 
             conn = pyodbc.connect(self.connection_string)
@@ -90,7 +94,8 @@ class DatabaseManager:
                 # Sprawdzenie struktury tabeli
                 cursor.execute(f"SELECT TOP 0 * FROM {table_name}")
                 columns = [column[0] for column in cursor.description]
-                logger.debug(f"Kolumny w tabeli {table_name}: {', '.join(columns)}")
+                logger.debug(
+                    f"Kolumny w tabeli {table_name}: {', '.join(columns)}")
 
                 # Przypisanie tabel na podstawie nazwy i struktury
                 if table_name == 'DOKUMENT_MAGAZYNOWY':
@@ -102,10 +107,12 @@ class DatabaseManager:
 
             # Sprawdzenie czy wszystkie wymagane tabele zostały znalezione
             required_tables = ['dokumenty', 'kontrahenci', 'operatorzy']
-            missing_tables = [t for t in required_tables if t not in self.table_names]
+            missing_tables = [
+                t for t in required_tables if t not in self.table_names]
 
             if missing_tables:
-                logger.error(f"Nie znaleziono następujących tabel: {', '.join(missing_tables)}")
+                logger.error(
+                    f"Nie znaleziono następujących tabel: {', '.join(missing_tables)}")
                 raise Exception("Brak wymaganych tabel w bazie danych")
 
             logger.info("Znalezione mapowania tabel:")
@@ -131,32 +138,43 @@ class DatabaseManager:
 
             # Po znalezieniu tabel, sprawdźmy ich strukturę
             if 'dokumenty' in self.table_names:
-                cursor.execute(f"SELECT TOP 0 * FROM {self.table_names['dokumenty']}")
-                self.dokument_columns = [column[0] for column in cursor.description]
-                logger.info(f"Kolumny tabeli {self.table_names['dokumenty']}: {', '.join(self.dokument_columns)}")
+                cursor.execute(
+                    f"SELECT TOP 0 * FROM {self.table_names['dokumenty']}")
+                self.dokument_columns = [column[0]
+                                         for column in cursor.description]
+                logger.info(
+                    f"Kolumny tabeli {self.table_names['dokumenty']}: {', '.join(self.dokument_columns)}")
 
             if 'kontrahenci' in self.table_names:
-                cursor.execute(f"SELECT TOP 0 * FROM {self.table_names['kontrahenci']}")
-                self.kontrahent_columns = [column[0] for column in cursor.description]
-                logger.info(f"Kolumny tabeli {self.table_names['kontrahenci']}: {', '.join(self.kontrahent_columns)}")
+                cursor.execute(
+                    f"SELECT TOP 0 * FROM {self.table_names['kontrahenci']}")
+                self.kontrahent_columns = [column[0]
+                                           for column in cursor.description]
+                logger.info(
+                    f"Kolumny tabeli {self.table_names['kontrahenci']}: {', '.join(self.kontrahent_columns)}")
 
             if 'operatorzy' in self.table_names:
-                cursor.execute(f"SELECT TOP 0 * FROM {self.table_names['operatorzy']}")
-                self.operator_columns = [column[0] for column in cursor.description]
-                logger.info(f"Kolumny tabeli {self.table_names['operatorzy']}: {', '.join(self.operator_columns)}")
+                cursor.execute(
+                    f"SELECT TOP 0 * FROM {self.table_names['operatorzy']}")
+                self.operator_columns = [column[0]
+                                         for column in cursor.description]
+                logger.info(
+                    f"Kolumny tabeli {self.table_names['operatorzy']}: {', '.join(self.operator_columns)}")
 
             cursor.close()
             conn.close()
 
         except Exception as e:
-            logger.error(f"Błąd podczas weryfikacji tabel w bazie danych: {e}", exc_info=True)
+            logger.error(
+                f"Błąd podczas weryfikacji tabel w bazie danych: {e}", exc_info=True)
             raise
 
     def test_connection(self):
         """Testuje połączenie z bazą danych"""
         try:
             logger.info("Rozpoczynam test połączenia z bazą danych")
-            logger.info(f"Próba połączenia z bazą danych: {self.connection_string}")
+            logger.info(
+                f"Próba połączenia z bazą danych: {self.connection_string}")
 
             # Sprawdzamy dostępne sterowniki ODBC
             drivers = [x for x in pyodbc.drivers()]
@@ -170,7 +188,8 @@ class DatabaseManager:
             cursor = conn.cursor()
             cursor.execute("SELECT @@VERSION")
             row = cursor.fetchone()
-            logger.info(f"Pomyślnie połączono z bazą danych. Wersja SQL Server: {row[0]}")
+            logger.info(
+                f"Pomyślnie połączono z bazą danych. Wersja SQL Server: {row[0]}")
             conn.close()
             return True
         except pyodbc.Error as e:
@@ -178,7 +197,8 @@ class DatabaseManager:
             logger.error(f"String połączenia: {self.connection_string}")
             return False
         except Exception as e:
-            logger.error(f"Nieoczekiwany błąd podczas połączenia z bazą danych: {e}", exc_info=True)
+            logger.error(
+                f"Nieoczekiwany błąd podczas połączenia z bazą danych: {e}", exc_info=True)
             return False
 
     def get_new_documents(self, allowed_users):
@@ -254,7 +274,8 @@ class DatabaseManager:
             conn.close()
 
         except Exception as e:
-            logger.error(f"Błąd podczas pobierania nowych dokumentów: {e}", exc_info=True)
+            logger.error(
+                f"Błąd podczas pobierania nowych dokumentów: {e}", exc_info=True)
 
         return documents
 
@@ -303,7 +324,8 @@ class DatabaseManager:
             conn.close()
 
         except Exception as e:
-            logger.error(f"Błąd podczas pobierania pozycji dokumentu {document_id}: {e}", exc_info=True)
+            logger.error(
+                f"Błąd podczas pobierania pozycji dokumentu {document_id}: {e}", exc_info=True)
 
         return items
 
@@ -332,7 +354,8 @@ class DatabaseManager:
             return True
 
         except Exception as e:
-            logger.error(f"Błąd podczas aktualizacji historii wydruku dla dokumentu {document_id}: {e}", exc_info=True)
+            logger.error(
+                f"Błąd podczas aktualizacji historii wydruku dla dokumentu {document_id}: {e}", exc_info=True)
             return False
 
     def execute_query(self, query, params=None):
@@ -372,7 +395,7 @@ class DatabaseManager:
     def connect(self):
         """
         Establishes a connection to the database.
-        
+
         Returns:
             bool: True if connection was successful, False otherwise.
         """
@@ -415,7 +438,8 @@ class DatabaseManager:
             return self.cursor.fetchall()  # Return Row objects
         except pyodbc.Error as ex:
             sqlstate = ex.args[0]
-            logger.error(f"Error executing query: {sqlstate}")  # Keep original error message
+            # Keep original error message
+            logger.error(f"Error executing query: {sqlstate}")
             return None
 
     def execute_non_query(self, query, params=None):

@@ -14,6 +14,7 @@ from lib.log_config import get_logger
 
 logger = get_logger().getLogger(__name__)
 
+
 def generate_pdf(document_data, output_path):
     """
     Generuje plik PDF z danymi dokumentu ZO.
@@ -48,7 +49,8 @@ def generate_pdf(document_data, output_path):
         elements = []
 
         # Tytuł dokumentu
-        elements.append(Paragraph(f"Zamówienie Odbiorcy: {document_data['numer_dokumentu']}", title_style))
+        elements.append(Paragraph(
+            f"Zamówienie Odbiorcy: {document_data['numer_dokumentu']}", title_style))
         elements.append(Spacer(1, 12))
 
         # Dane podstawowe
@@ -80,7 +82,8 @@ def generate_pdf(document_data, output_path):
         # Generowanie dokumentu
         doc.build(elements)
 
-        logger.info(f"Wygenerowano PDF dla dokumentu {document_data['numer_dokumentu']} w {output_path}")
+        logger.info(
+            f"Wygenerowano PDF dla dokumentu {document_data['numer_dokumentu']} w {output_path}")
         return True
 
     except Exception as e:

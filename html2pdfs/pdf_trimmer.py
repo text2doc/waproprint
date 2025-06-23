@@ -55,12 +55,14 @@ def trim_pdf_to_content(pdf_path, output_path=None):
 
         # Wykryj rzeczywistą wysokość zawartości
         content_height_mm = detect_content_height_from_pdf(pdf_path)
-        logger.info(f"Wykryto wysokość zawartości PDF: {content_height_mm:.2f}mm")
+        logger.info(
+            f"Wykryto wysokość zawartości PDF: {content_height_mm:.2f}mm")
 
         # Dodaj margines bezpieczeństwa (10%)
         # final_height_mm = content_height_mm * 1.1
         final_height_mm = content_height_mm * 1
-        logger.info(f"Używam wysokości z marginesem bezpieczeństwa: {final_height_mm:.2f}mm")
+        logger.info(
+            f"Używam wysokości z marginesem bezpieczeństwa: {final_height_mm:.2f}mm")
 
         # Sprawdź, która biblioteka jest dostępna
         if PYMUPDF_AVAILABLE:
@@ -92,7 +94,8 @@ def trim_pdf_to_content(pdf_path, output_path=None):
             for page_num in range(len(doc)):
                 # Utwórz nową stronę o prawidłowej wysokości
                 page = doc[page_num]
-                new_page = new_doc.new_page(width=width_pts, height=content_height_pts)
+                new_page = new_doc.new_page(
+                    width=width_pts, height=content_height_pts)
 
                 # Skopiuj zawartość z oryginalnej strony, zachowując górną część
                 rect = fitz.Rect(0, 0, width_pts, content_height_pts)
@@ -103,7 +106,8 @@ def trim_pdf_to_content(pdf_path, output_path=None):
             new_doc.close()
             doc.close()
 
-            logger.info(f"Przycięto PDF używając PyMuPDF do wysokości {final_height_mm:.2f}mm")
+            logger.info(
+                f"Przycięto PDF używając PyMuPDF do wysokości {final_height_mm:.2f}mm")
 
         else:
             # Użyj PyPDF2 do prostszego przycięcia
@@ -152,14 +156,16 @@ def trim_pdf_to_content(pdf_path, output_path=None):
             with open(temp_output, 'wb') as f:
                 writer.write(f)
 
-            logger.info(f"Przycięto PDF używając PyPDF2 do wysokości {final_height_mm:.2f}mm")
+            logger.info(
+                f"Przycięto PDF używając PyPDF2 do wysokości {final_height_mm:.2f}mm")
 
         # Jeśli mamy nadpisać oryginalny plik
         if will_overwrite:
             # Zrób kopię zapasową oryginalnego pliku
             backup_path = pdf_path + ".bak"
             shutil.copy2(pdf_path, backup_path)
-            logger.debug(f"Utworzono kopię zapasową oryginalnego PDF: {backup_path}")
+            logger.debug(
+                f"Utworzono kopię zapasową oryginalnego PDF: {backup_path}")
 
             # Nadpisz oryginalny plik
             shutil.move(temp_output, pdf_path)
@@ -179,7 +185,8 @@ def trim_pdf_to_content(pdf_path, output_path=None):
             return pdf_path
         else:
             # Jeśli podano ścieżkę wyjściową, ale wystąpił błąd, zwróć oryginalną ścieżkę
-            logger.warning(f"Nie udało się utworzyć przyciętego PDF. Zwracam ścieżkę oryginału: {pdf_path}")
+            logger.warning(
+                f"Nie udało się utworzyć przyciętego PDF. Zwracam ścieżkę oryginału: {pdf_path}")
             return pdf_path
 
 
@@ -238,7 +245,8 @@ def detect_content_height_pymupdf(pdf_file):
 
         # Znajdź największą współrzędną Y (najniższy punkt tekstu)
         for block in blocks:
-            _, _, _, block_y1, *_ = block[:4]  # Współrzędne bloku (x0, y0, x1, y1, ...)
+            # Współrzędne bloku (x0, y0, x1, y1, ...)
+            _, _, _, block_y1, *_ = block[:4]
             max_y = max(max_y, block_y1)
 
         # Sprawdź również elementy graficzne
@@ -301,7 +309,8 @@ def detect_content_height_pil(pdf_file):
     return max_y_mm
 
 
-def convert_pdf_to_images(pdf_file, dpi=150):  # Zwiększone DPI dla lepszej dokładności
+# Zwiększone DPI dla lepszej dokładności
+def convert_pdf_to_images(pdf_file, dpi=150):
     """
     Konwertuje strony PDF na obrazy.
 
@@ -326,12 +335,14 @@ def convert_pdf_to_images(pdf_file, dpi=150):  # Zwiększone DPI dla lepszej dok
                 page = doc[page_num]
                 # Używamy wyższej rozdzielczości dla lepszej dokładności
                 pix = page.get_pixmap(dpi=dpi)
-                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                img = Image.frombytes(
+                    "RGB", [pix.width, pix.height], pix.samples)
                 images.append(img)
 
             return images
         else:
-            logger.warning("Brak wymaganych bibliotek do konwersji PDF na obrazy")
+            logger.warning(
+                "Brak wymaganych bibliotek do konwersji PDF na obrazy")
             return []
 
 
@@ -359,7 +370,8 @@ def detect_content_height_pypdf2(pdf_file):
 
         # Zakładamy, że zawartość zajmuje 95% wysokości strony
         # Jest to przybliżenie, ponieważ PyPDF2 nie daje bezpośredniego dostępu do zawartości
-        height_pts = height_pts * 0.97  # Używamy większej wartości (97% zamiast 95%)
+        # Używamy większej wartości (97% zamiast 95%)
+        height_pts = height_pts * 0.97
 
         max_y = max(max_y, height_pts)
 
@@ -395,14 +407,15 @@ def trim_existing_pdf(pdf_path, page_width_inches=None, margin_mm=None, dpi=None
         # Utwórz kopię zapasową oryginalnego pliku PDF
         backup_path = pdf_path + ".original"
         shutil.copy2(pdf_path, backup_path)
-        logger.info(f"Utworzono kopię zapasową oryginalnego PDF: {backup_path}")
+        logger.info(
+            f"Utworzono kopię zapasową oryginalnego PDF: {backup_path}")
 
         # Przycięcie PDF do zawartości
         result = trim_pdf_to_content(pdf_path)
 
         if result:
             logger.info(f"Pomyślnie przycięto PDF: {result}")
-            ## usun ten plik
+            # usun ten plik
             os.remove(backup_path)
             return result
         else:
@@ -418,5 +431,6 @@ def trim_existing_pdf(pdf_path, page_width_inches=None, margin_mm=None, dpi=None
         backup_path = pdf_path + ".original"
         if os.path.exists(backup_path):
             shutil.copy2(backup_path, pdf_path)
-            logger.info("Przywrócono oryginalny PDF z kopii zapasowej po błędzie")
+            logger.info(
+                "Przywrócono oryginalny PDF z kopii zapasowej po błędzie")
         return None

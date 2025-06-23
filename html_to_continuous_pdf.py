@@ -68,7 +68,8 @@ def html_to_continuous_pdf(html_file, pdf_file=None, page_width=4.0, margin=5, d
 
         if two_pass and (PYMUPDF_AVAILABLE and PIL_NUMPY_AVAILABLE):
             # PIERWSZY PRZEBIEG - wygeneruj PDF z dużą wysokością
-            logger.info("Pierwszy przebieg - generowanie wstępnego PDF do analizy...")
+            logger.info(
+                "Pierwszy przebieg - generowanie wstępnego PDF do analizy...")
 
             # Użyj bardzo dużej wysokości dla pierwszego przebiegu
             first_pass_options = [
@@ -87,15 +88,18 @@ def html_to_continuous_pdf(html_file, pdf_file=None, page_width=4.0, margin=5, d
             ]
 
             temp_pdf = generate_temp_filename(prefix="first_pass")
-            success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, temp_pdf, first_pass_options)
+            success = run_wkhtmltopdf(
+                wkhtmltopdf_path, processed_html, temp_pdf, first_pass_options)
 
             if not success:
-                logger.warning("Pierwszy przebieg nie powiódł się, próbuję z prostszymi opcjami...")
+                logger.warning(
+                    "Pierwszy przebieg nie powiódł się, próbuję z prostszymi opcjami...")
                 first_pass_options = [
                     '--page-width', f'{page_width_mm}mm',
                     '--disable-smart-shrinking'
                 ]
-                success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, temp_pdf, first_pass_options)
+                success = run_wkhtmltopdf(
+                    wkhtmltopdf_path, processed_html, temp_pdf, first_pass_options)
 
             if success:
                 # Analizuj wygenerowany PDF, aby wykryć rzeczywistą wysokość zawartości
@@ -104,10 +108,12 @@ def html_to_continuous_pdf(html_file, pdf_file=None, page_width=4.0, margin=5, d
                     optimal_height_mm = get_optimal_pdf_height(temp_pdf)
 
                     if optimal_height_mm is not None:
-                        logger.info(f"Wykryta rzeczywista wysokość treści: {optimal_height_mm:.2f}mm")
+                        logger.info(
+                            f"Wykryta rzeczywista wysokość treści: {optimal_height_mm:.2f}mm")
 
                         # DRUGI PRZEBIEG - wygeneruj PDF z dokładnie określoną wysokością
-                        logger.info("Drugi przebieg - generowanie ostatecznego PDF z dokładną wysokością...")
+                        logger.info(
+                            "Drugi przebieg - generowanie ostatecznego PDF z dokładną wysokością...")
 
                         second_pass_options = [
                             '--page-width', f'{page_width_mm}mm',
@@ -126,7 +132,8 @@ def html_to_continuous_pdf(html_file, pdf_file=None, page_width=4.0, margin=5, d
                             '--no-outline'
                         ]
 
-                        success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, pdf_file, second_pass_options)
+                        success = run_wkhtmltopdf(
+                            wkhtmltopdf_path, processed_html, pdf_file, second_pass_options)
 
                         # Usuń tymczasowy plik z pierwszego przebiegu
                         try:
@@ -147,11 +154,13 @@ def html_to_continuous_pdf(html_file, pdf_file=None, page_width=4.0, margin=5, d
 
         # Standardowe podejście - użyj szacowanej wysokości na podstawie treści HTML
         estimated_height_mm = calculate_optimal_height(html_file)
-        logger.info(f"Używam szacowanej wysokości: {estimated_height_mm:.2f}mm")
+        logger.info(
+            f"Używam szacowanej wysokości: {estimated_height_mm:.2f}mm")
 
         continuous_options = [
             '--page-width', f'{page_width_mm}mm',
-            '--page-height', f'{estimated_height_mm + 20}mm',  # Dodaj dodatkowe 20mm
+            # Dodaj dodatkowe 20mm
+            '--page-height', f'{estimated_height_mm + 20}mm',
             '--margin-top', f'{margin}mm',
             '--margin-bottom', f'{margin}mm',
             '--margin-left', f'{margin}mm',
@@ -169,10 +178,12 @@ def html_to_continuous_pdf(html_file, pdf_file=None, page_width=4.0, margin=5, d
         ]
 
         # Najpierw spróbuj z opcjami dla ciągłego wydruku
-        success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, pdf_file, continuous_options)
+        success = run_wkhtmltopdf(
+            wkhtmltopdf_path, processed_html, pdf_file, continuous_options)
 
         if not success:
-            logger.info("Pierwszy sposób nie zadziałał, próbuję z prostszymi opcjami...")
+            logger.info(
+                "Pierwszy sposób nie zadziałał, próbuję z prostszymi opcjami...")
 
             # Jeśli nie zadziałało, spróbuj z minimalnymi opcjami
             minimal_options = [
@@ -186,13 +197,15 @@ def html_to_continuous_pdf(html_file, pdf_file=None, page_width=4.0, margin=5, d
                 '--disable-smart-shrinking'
             ]
 
-            success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, pdf_file, minimal_options)
+            success = run_wkhtmltopdf(
+                wkhtmltopdf_path, processed_html, pdf_file, minimal_options)
 
             if not success:
                 logger.info("Próbuję z absolutnie minimalnymi opcjami...")
 
                 # Jeśli nadal nie zadziałało, spróbuj z absolutnie minimalnymi opcjami
-                success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, pdf_file, [])
+                success = run_wkhtmltopdf(
+                    wkhtmltopdf_path, processed_html, pdf_file, [])
 
                 if not success:
                     logger.error("Wszystkie metody konwersji nie powiodły się")
@@ -201,7 +214,8 @@ def html_to_continuous_pdf(html_file, pdf_file=None, page_width=4.0, margin=5, d
         # Sprawdź, czy PDF został wygenerowany i ma rozmiar większy od zera
         if os.path.exists(pdf_file) and os.path.getsize(pdf_file) > 0:
             logger.info(f"PDF wygenerowany pomyślnie: {pdf_file}")
-            logger.info(f"Rozmiar pliku PDF: {os.path.getsize(pdf_file) / 1024:.2f} KB")
+            logger.info(
+                f"Rozmiar pliku PDF: {os.path.getsize(pdf_file) / 1024:.2f} KB")
             return pdf_file
         else:
             logger.error("PDF nie został wygenerowany lub ma zerowy rozmiar")
@@ -216,7 +230,8 @@ def html_to_continuous_pdf(html_file, pdf_file=None, page_width=4.0, margin=5, d
         try:
             if os.path.exists(processed_html):
                 os.unlink(processed_html)
-                logger.debug(f"Usunięto tymczasowy plik HTML: {processed_html}")
+                logger.debug(
+                    f"Usunięto tymczasowy plik HTML: {processed_html}")
         except:
             pass
 
@@ -232,14 +247,22 @@ def parse_arguments():
         description='Konwersja HTML do ciągłego PDF z poprawioną obsługą plików'
     )
     parser.add_argument('input_file', help='Ścieżka do pliku HTML')
-    parser.add_argument('-o', '--output', help='Ścieżka do pliku wyjściowego PDF')
-    parser.add_argument('--width', type=float, default=4.0, help='Szerokość strony w calach (domyślnie 4.0)')
-    parser.add_argument('--margin', type=int, default=5, help='Margines w milimetrach (domyślnie 5)')
-    parser.add_argument('--dpi', type=int, default=203, help='Rozdzielczość w DPI (domyślnie 203)')
-    parser.add_argument('--items', type=int, help='Liczba pozycji w dokumencie (opcjonalnie)')
-    parser.add_argument('--single-pass', action='store_true', help='Używaj tylko jednego przebiegu konwersji')
-    parser.add_argument('--split-pdf', action='store_true', help='Podziel PDF na treść i białą przestrzeń')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Wyświetlaj szczegółowe komunikaty')
+    parser.add_argument(
+        '-o', '--output', help='Ścieżka do pliku wyjściowego PDF')
+    parser.add_argument('--width', type=float, default=4.0,
+                        help='Szerokość strony w calach (domyślnie 4.0)')
+    parser.add_argument('--margin', type=int, default=5,
+                        help='Margines w milimetrach (domyślnie 5)')
+    parser.add_argument('--dpi', type=int, default=203,
+                        help='Rozdzielczość w DPI (domyślnie 203)')
+    parser.add_argument('--items', type=int,
+                        help='Liczba pozycji w dokumencie (opcjonalnie)')
+    parser.add_argument('--single-pass', action='store_true',
+                        help='Używaj tylko jednego przebiegu konwersji')
+    parser.add_argument('--split-pdf', action='store_true',
+                        help='Podziel PDF na treść i białą przestrzeń')
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help='Wyświetlaj szczegółowe komunikaty')
 
     return parser.parse_args()
 
@@ -268,7 +291,8 @@ def convert_html_to_pdf(args):
         if args.items:
             logger.info(f"Używam podanej liczby pozycji: {args.items}")
             # Obliczmy i wyświetlmy optymalną wysokość
-            optimal_height = calculate_optimal_height(args.input_file, args.items)
+            optimal_height = calculate_optimal_height(
+                args.input_file, args.items)
             logger.info(f"Optymalna wysokość dokumentu: {optimal_height}mm")
 
         # Konwersja HTML do PDF
@@ -298,7 +322,8 @@ def convert_html_to_pdf(args):
 
                 if PYMUPDF_AVAILABLE and PIL_NUMPY_AVAILABLE:
                     # Podziel PDF na część z treścią i białą przestrzeń
-                    content_pdf = os.path.splitext(temp_pdf)[0] + "_content.pdf"
+                    content_pdf = os.path.splitext(
+                        temp_pdf)[0] + "_content.pdf"
                     blank_pdf = os.path.splitext(temp_pdf)[0] + "_blank.pdf"
 
                     logger.info("Dzielenie PDF na treść i białą przestrzeń...")
@@ -307,14 +332,17 @@ def convert_html_to_pdf(args):
                     )
 
                     if content_height and content_path:
-                        logger.info(f"Podzielono PDF. Wysokość treści: {content_height:.2f}mm")
+                        logger.info(
+                            f"Podzielono PDF. Wysokość treści: {content_height:.2f}mm")
                         logger.info(f"Treść zapisana do: {content_path}")
-                        logger.info(f"Biała przestrzeń zapisana do: {blank_path}")
+                        logger.info(
+                            f"Biała przestrzeń zapisana do: {blank_path}")
 
                         # Użyj treści jako finalnego PDF
                         temp_pdf = content_path
                 else:
-                    logger.warning("Nie można podzielić PDF - brak wymaganych bibliotek (PyMuPDF, PIL, NumPy)")
+                    logger.warning(
+                        "Nie można podzielić PDF - brak wymaganych bibliotek (PyMuPDF, PIL, NumPy)")
             except Exception as e:
                 logger.error(f"Błąd podczas dzielenia PDF: {e}")
 
@@ -329,7 +357,8 @@ def convert_html_to_pdf(args):
             default_output = os.path.splitext(args.input_file)[0] + '.pdf'
             final_pdf = pdf_to_final_location(temp_pdf, default_output)
 
-        logger.info(f"Konwersja zakończona pomyślnie. Wygenerowano plik: {final_pdf}")
+        logger.info(
+            f"Konwersja zakończona pomyślnie. Wygenerowano plik: {final_pdf}")
         return 0
 
     except Exception as e:
@@ -355,7 +384,6 @@ def main():
         two_pass=True
     )
 
-
     try:
         from pdf_analysis import split_pdf_at_content_end, PYMUPDF_AVAILABLE, PIL_NUMPY_AVAILABLE
 
@@ -370,14 +398,16 @@ def main():
             )
 
             if content_height and content_path:
-                logger.info(f"Podzielono PDF. Wysokość treści: {content_height:.2f}mm")
+                logger.info(
+                    f"Podzielono PDF. Wysokość treści: {content_height:.2f}mm")
                 logger.info(f"Treść zapisana do: {content_path}")
                 logger.info(f"Biała przestrzeń zapisana do: {blank_path}")
 
                 # Użyj treści jako finalnego PDF
                 temp_pdf = content_path
         else:
-            logger.warning("Nie można podzielić PDF - brak wymaganych bibliotek (PyMuPDF, PIL, NumPy)")
+            logger.warning(
+                "Nie można podzielić PDF - brak wymaganych bibliotek (PyMuPDF, PIL, NumPy)")
     except Exception as e:
         logger.error(f"Błąd podczas dzielenia PDF: {e}")
 

@@ -6,14 +6,14 @@ try:
     import playwright
     from playwright.sync_api import sync_playwright
     print("Successfully imported playwright.sync_api")
-    
+
     # Get version using pkg_resources
     try:
         version = pkg_resources.get_distribution('playwright').version
         print(f"Playwright package version: {version}")
     except Exception as e:
         print(f"Could not determine Playwright version: {e}")
-    
+
     # Test creating a browser instance
     print("Testing browser launch...")
     with sync_playwright() as p:
@@ -21,7 +21,7 @@ try:
         page = browser.new_page()
         print("Successfully launched browser and created page")
         browser.close()
-        
+
 except ImportError as e:
     print(f"Failed to import playwright: {e}")
     print("Python path:")

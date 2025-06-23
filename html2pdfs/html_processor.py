@@ -166,19 +166,24 @@ def preprocess_html(html_file):
 
         # Wstaw CSS do tagu head lub na początek pliku jeśli brak tagu head
         if '<head>' in html_content:
-            html_content = html_content.replace('<head>', '<head>' + continuous_css)
+            html_content = html_content.replace(
+                '<head>', '<head>' + continuous_css)
         else:
             html_content = continuous_css + html_content
 
         # Upewnij się, że body nie ma zbędnych stylów ani atrybutów wysokości
-        html_content = re.sub(r'<body[^>]*style="[^"]*height:[^"]*"[^>]*>', '<body>', html_content)
-        html_content = re.sub(r'<body[^>]*height="[^"]*"[^>]*>', '<body>', html_content)
+        html_content = re.sub(
+            r'<body[^>]*style="[^"]*height:[^"]*"[^>]*>', '<body>', html_content)
+        html_content = re.sub(
+            r'<body[^>]*height="[^"]*"[^>]*>', '<body>', html_content)
 
         # Usuń wszystkie atrybuty stylu które mogą wpływać na wyświetlanie dokumentu
-        html_content = re.sub(r'style="[^"]*page-break[^"]*"', 'style=""', html_content)
+        html_content = re.sub(
+            r'style="[^"]*page-break[^"]*"', 'style=""', html_content)
 
         # Dodaj znacznik końca dokumentu
-        html_content = html_content.replace('</body>', '<div id="document-end-marker"></div></body>')
+        html_content = html_content.replace(
+            '</body>', '<div id="document-end-marker"></div></body>')
 
         # Upewnij się, że HTML jest poprawny - dodaj brakujące tagi jeśli to konieczne
         if '<html' not in html_content:
@@ -189,11 +194,14 @@ def preprocess_html(html_file):
                               html_content)
 
         # Ustaw sztywne wymiary komórek aby zapobiec niepożądanym podziałom
-        html_content = re.sub(r'<td[^>]*>', '<td style="page-break-inside:avoid !important;">', html_content)
-        html_content = re.sub(r'<tr[^>]*>', '<tr style="page-break-inside:avoid !important;">', html_content)
+        html_content = re.sub(
+            r'<td[^>]*>', '<td style="page-break-inside:avoid !important;">', html_content)
+        html_content = re.sub(
+            r'<tr[^>]*>', '<tr style="page-break-inside:avoid !important;">', html_content)
 
         # Usuń wszystkie skrypty którę mogą modyfikować dokument
-        html_content = re.sub(r'<script.*?</script>', '', html_content, flags=re.DOTALL)
+        html_content = re.sub(r'<script.*?</script>', '',
+                              html_content, flags=re.DOTALL)
 
         # Zapisz zmodyfikowany HTML do pliku tymczasowego
         temp_html.write(html_content)
@@ -227,10 +235,12 @@ def calculate_optimal_height(html_file, item_count=None):
                     item_count = len(item_rows)
                 else:
                     # Próbujemy alternatywnego podejścia - liczymy <tr> w <tbody>
-                    body_content = re.search(r'<tbody>(.*?)</tbody>', content, re.DOTALL)
+                    body_content = re.search(
+                        r'<tbody>(.*?)</tbody>', content, re.DOTALL)
                     if body_content:
                         rows = re.findall(r'<tr', body_content.group(1))
-                        item_count = len(rows) // 2  # Zakładając że każdy element ma 2 wiersze
+                        # Zakładając że każdy element ma 2 wiersze
+                        item_count = len(rows) // 2
                     else:
                         # Domyślnie zakładamy 10 pozycji jeśli nie możemy określić
                         item_count = 10
@@ -243,7 +253,8 @@ def calculate_optimal_height(html_file, item_count=None):
         footer_height_mm = 20  # Średnia stopka dokumentu
 
         # Całkowita wysokość treści
-        total_content_height_mm = header_height_mm + (item_height_mm * item_count) + footer_height_mm
+        total_content_height_mm = header_height_mm + \
+            (item_height_mm * item_count) + footer_height_mm
 
         # Dodajemy margines bezpieczeństwa 5%
         optimal_height_mm = total_content_height_mm * 1.05

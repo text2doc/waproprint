@@ -26,7 +26,8 @@ def convert_zpl_to_image(zpl_content, dpmm=8):
 
     try:
         # Upewniamy się, że wysyłamy dane w UTF-8
-        response = requests.post(url, headers=headers, data=zpl_content.encode('utf-8'))
+        response = requests.post(url, headers=headers,
+                                 data=zpl_content.encode('utf-8'))
         response.raise_for_status()  # Raise exception for HTTP errors
         return response.content
     except requests.exceptions.RequestException as e:
@@ -53,7 +54,8 @@ def image_to_pdf(image_data, output_path):
 
         # Create PDF with appropriate size
         c = canvas.Canvas(output_path, pagesize=(img_width, img_height))
-        c.drawImage(ImageReader(temp_filename), 0, 0, width=img_width, height=img_height)
+        c.drawImage(ImageReader(temp_filename), 0, 0,
+                    width=img_width, height=img_height)
         c.save()
 
         # Ważne: zamknij obiekt Image przed próbą usunięcia pliku
@@ -71,11 +73,13 @@ def image_to_pdf(image_data, output_path):
             time.sleep(0.5)  # Zwiększ opóźnienie
             os.unlink(temp_filename)
         except Exception as e:
-            print(f"Warning: Could not delete temporary file {temp_filename}: {e}")
+            print(
+                f"Warning: Could not delete temporary file {temp_filename}: {e}")
             # Utworzenie zadania do późniejszego usunięcia pliku
             try:
                 if sys.platform == 'win32':
-                    os.system(f'(ping 127.0.0.1 -n 2 > nul && del "{temp_filename}" > nul 2>&1)')
+                    os.system(
+                        f'(ping 127.0.0.1 -n 2 > nul && del "{temp_filename}" > nul 2>&1)')
                 else:
                     os.system(f'(sleep 2 && rm "{temp_filename}") &')
             except:
@@ -126,7 +130,8 @@ def print_pdf(pdf_path):
             import win32api
 
             printer_name = win32print.GetDefaultPrinter()
-            win32api.ShellExecute(0, "print", pdf_path, f'/d:"{printer_name}"', ".", 0)
+            win32api.ShellExecute(0, "print", pdf_path,
+                                  f'/d:"{printer_name}"', ".", 0)
             print(f"Print job sent to {printer_name}")
             return True
         except ImportError:
@@ -138,7 +143,8 @@ def print_pdf(pdf_path):
     else:
         try:
             import subprocess
-            result = subprocess.run(['lp', pdf_path], capture_output=True, text=True)
+            result = subprocess.run(
+                ['lp', pdf_path], capture_output=True, text=True)
             if result.returncode == 0:
                 print("Print job sent to default printer")
                 return True
@@ -180,13 +186,18 @@ def create_label_pdf_direct(output_path, data):
     c.save()
     return True
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Convert ZPL files to PDF and optionally print them")
+    parser = argparse.ArgumentParser(
+        description="Convert ZPL files to PDF and optionally print them")
     parser.add_argument("input", help="Input ZPL file path or ZPL string")
     parser.add_argument("-o", "--output", help="Output PDF file path")
-    parser.add_argument("-d", "--dpmm", type=int, default=8, help="Dots per mm (default: 8)")
-    parser.add_argument("-p", "--print", action="store_true", help="Print the PDF after creating it")
-    parser.add_argument("-s", "--string", action="store_true", help="Treat input as ZPL string instead of file path")
+    parser.add_argument("-d", "--dpmm", type=int, default=8,
+                        help="Dots per mm (default: 8)")
+    parser.add_argument("-p", "--print", action="store_true",
+                        help="Print the PDF after creating it")
+    parser.add_argument("-s", "--string", action="store_true",
+                        help="Treat input as ZPL string instead of file path")
 
     args = parser.parse_args()
 
@@ -200,7 +211,8 @@ def main():
     if args.string:
         success = convert_zpl_string_to_pdf(args.input, args.output, args.dpmm)
     else:
-        success = convert_zpl_file_to_pdf(args.input, args.output, args.dpmm, args.print)
+        success = convert_zpl_file_to_pdf(
+            args.input, args.output, args.dpmm, args.print)
 
     # Print if requested and conversion was successful
     if success and args.print:

@@ -4,7 +4,6 @@ from lib.log_config import get_logger
 logger = get_logger().getLogger(__name__)
 
 
-
 def get_next_zo_number(db_manager):
     """Pobiera następny dostępny numer dokumentu ZO"""
     try:
@@ -26,6 +25,6 @@ def get_next_zo_number(db_manager):
         return f"ZO {next_number:04d}/{current_year}"
 
     except Exception as e:
-        logger.error(f"Błąd podczas pobierania następnego numeru dokumentu: {e}")
+        logger.error(
+            f"Błąd podczas pobierania następnego numeru dokumentu: {e}")
         return None
-

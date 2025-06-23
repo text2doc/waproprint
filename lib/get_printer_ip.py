@@ -1,6 +1,7 @@
 import win32print
 import logging
 
+
 def get_printer_ip(printer_name):
     """Pobiera adres IP drukarki na podstawie jej nazwy"""
     try:
@@ -27,7 +28,8 @@ def get_printer_ip(printer_name):
                     logging.info(f"Adres IP drukarki {printer_name}: {part}")
                     return part
 
-        logging.warning(f"Nie można określić adresu IP dla drukarki {printer_name}")
+        logging.warning(
+            f"Nie można określić adresu IP dla drukarki {printer_name}")
         return None
     except Exception as e:
         logging.error(f"Błąd podczas pobierania adresu IP drukarki: {str(e)}")

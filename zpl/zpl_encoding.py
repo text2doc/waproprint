@@ -26,4 +26,5 @@ def get_encoding_command(encoding):
         'utf-8': "^CI28",  # UTF-8
         'cp437': "^CI0"  # US English
     }
-    return encoding_map.get(encoding.lower(), "^CI13")  # Domyślnie CP852 dla polskich znaków
+    # Domyślnie CP852 dla polskich znaków
+    return encoding_map.get(encoding.lower(), "^CI13")

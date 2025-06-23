@@ -23,6 +23,7 @@ from .zpl_to_pdf import (
 # For backward compatibility, create a default converter instance
 _html_to_zpl_converter = None
 
+
 def html_to_zpl(html_content, **kwargs):
     """
     Convert HTML to ZPL using default converter settings.
@@ -32,6 +33,7 @@ def html_to_zpl(html_content, **kwargs):
     if _html_to_zpl_converter is None:
         _html_to_zpl_converter = HtmlToZplConverter(**kwargs)
     return _html_to_zpl_converter.convert(html_content)
+
 
 __all__ = [
     'print_zpl_to_network_printer',

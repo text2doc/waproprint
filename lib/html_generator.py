@@ -74,7 +74,8 @@ def generate_order_html(order_data, items, order_number=None, filter_product_typ
     if not order_number:
         order_number = order_data.get('NUMER', '')
         if not order_number:
-            order_number = f"ZO {datetime.now().strftime('%m%d')}/" + datetime.now().strftime('%y')
+            order_number = f"ZO {datetime.now().strftime('%m%d')}/" + \
+                datetime.now().strftime('%y')
 
     # Dostęp do danych kontrahenta - dostosowanie do nowej struktury JSON
     kontrahent_data = order_data.get('kontrahent', {})
@@ -117,13 +118,15 @@ def generate_order_html(order_data, items, order_number=None, filter_product_typ
             continue
 
     # Sortowanie pozycji po ID_ARTYKULU
-    ordered_items = sorted(ordered_items, key=lambda item: int(item.get('ID_ARTYKULU', 0)))
+    ordered_items = sorted(
+        ordered_items, key=lambda item: int(item.get('ID_ARTYKULU', 0)))
 
     # Generowanie kodu kreskowego - teraz z nową strukturą
     # Najpierw sprawdzamy kod kreskowy zamówienia, potem kontrahenta
     KOD = order_data.get('KOD_KRESKOWY', '')
     # if not KOD:
-    KOD2 = kontrahent_data.get('KOD_KRESKOWY', '')  # Sprawdź kod kreskowy kontrahenta
+    # Sprawdź kod kreskowy kontrahenta
+    KOD2 = kontrahent_data.get('KOD_KRESKOWY', '')
 
     if KOD is None:
         KOD = ""
@@ -325,14 +328,16 @@ def generate_order_html(order_data, items, order_number=None, filter_product_typ
       <div class="">      
       """
 
-    if KOD and len(str(KOD)) > 7: html += f"""<barcode type="EAN13" data="{KOD}"></barcode>"""
+    if KOD and len(str(KOD)) > 7:
+        html += f"""<barcode type="EAN13" data="{KOD}"></barcode>"""
 
     html += f"""
       </div>
       <div class="barcode">
       """
 
-    if KOD and len(str(KOD)) > 7: html += f"""<svg id="barcode" data-barcode="{KOD}"></svg>"""
+    if KOD and len(str(KOD)) > 7:
+        html += f"""<svg id="barcode" data-barcode="{KOD}"></svg>"""
 
     html += f"""
       </div>
@@ -355,7 +360,8 @@ def generate_order_html(order_data, items, order_number=None, filter_product_typ
               </div>
 """
 
-    if contractor['nip'] and len(contractor['nip']) > 1: html += f"""
+    if contractor['nip'] and len(contractor['nip']) > 1:
+        html += f"""
               <div class="client-row">
                 <div class="client-label">NIP: </div>
                 <div>{contractor['nip']}</div>
@@ -363,13 +369,13 @@ def generate_order_html(order_data, items, order_number=None, filter_product_typ
 
 """
 
-    if contractor['pesel'] and len(contractor['pesel']) > 1: html += f"""
+    if contractor['pesel'] and len(contractor['pesel']) > 1:
+        html += f"""
       <div class="client-row">
         <div class="client-label">PESEL: </div>
         <div>{contractor['pesel']}</div>
       </div>
 """
-
 
     html += f"""
     

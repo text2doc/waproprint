@@ -1,6 +1,7 @@
 import win32print
 import logging
 
+
 def get_printer_info(printer_name):
     """Pobiera szczegółowe informacje o drukarce"""
     try:
@@ -35,5 +36,6 @@ def get_printer_info(printer_name):
         logging.info(f"Pobrano informacje o drukarce {printer_name}")
         return info
     except Exception as e:
-        logging.error(f"Błąd podczas pobierania informacji o drukarce: {str(e)}")
+        logging.error(
+            f"Błąd podczas pobierania informacji o drukarce: {str(e)}")
         return None

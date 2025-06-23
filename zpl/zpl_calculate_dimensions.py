@@ -43,7 +43,8 @@ def calculate_element_dimensions(soup, dpi, margin_dots, font_types):
         if element.name in ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
             # Dodaj margines przed elementem blokowym
             if level > 0:  # Nie dodawaj dla pierwszego poziomu
-                total_height += int(0.05 * dpi)  # Niewielki odstęp między blokami
+                # Niewielki odstęp między blokami
+                total_height += int(0.05 * dpi)
 
             # Sprawdź, czy element ma tekst lub elementy inline
             has_content = False
@@ -68,7 +69,8 @@ def calculate_element_dimensions(soup, dpi, margin_dots, font_types):
             rows = element.find_all('tr')
             for row in rows:
                 # Wysokość wiersza tabeli
-                row_height = font_types['table_cell']['height'] + 10  # Dodajemy padding
+                # Dodajemy padding
+                row_height = font_types['table_cell']['height'] + 10
 
                 # Sprawdź, czy komórki mają wiele linii tekstu
                 cells = row.find_all(['td', 'th'])

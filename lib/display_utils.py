@@ -8,6 +8,7 @@ Funkcje pomocnicze do wyświetlania danych.
 from tabulate import tabulate
 from lib import format_date, format_number
 
+
 def display_documents(documents):
     """Wyświetla dokumenty w formie tabeli"""
     if not documents:
@@ -49,6 +50,7 @@ def display_documents(documents):
     ))
 
     return documents
+
 
 def get_document_by_index(documents, choice):
     """Pobiera dokument o podanym indeksie lub numerze"""

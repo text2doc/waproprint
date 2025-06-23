@@ -42,23 +42,18 @@ except ImportError:
         )
         logger = logging.getLogger('order_retriever')
 
-
-
         def get_zo_json_dir():
             config = ConfigManager()
             return config.config.get('Directories', 'JsonDir', fallback='orders_json')
-
 
         def get_zo_html_dir():
             config = ConfigManager()
             return config.config.get('Directories', 'HtmlDir', fallback='orders_html')
 
-
         def get_path_order(order_number, directory, extension):
             normalized_name = normalize_filename(order_number)
             os.makedirs(directory, exist_ok=True)
             return os.path.join(directory, f"{normalized_name}{extension}")
-
 
         def get_printed_orders():
             printed_dir = "printed_orders"
@@ -73,7 +68,6 @@ except ImportError:
                     printed_orders.add(order_number)
             return printed_orders
 
-
         class DatabaseManager:
             def __init__(self, connection_string):
                 self.connection_string = connection_string
@@ -86,14 +80,14 @@ except ImportError:
                     logger.info("Połączono z bazą danych")
                     return True
                 except Exception as e:
-                    logger.error(f"Błąd podczas łączenia z bazą danych: {str(e)}", exc_info=True)
+                    logger.error(
+                        f"Błąd podczas łączenia z bazą danych: {str(e)}", exc_info=True)
                     return False
 
             def close(self):
                 if self.connection:
                     self.connection.close()
                     logger.info("Zamknięto połączenie z bazą danych")
-
 
         class ConfigManager:
             def __init__(self, config_file='config.ini'):
@@ -105,27 +99,31 @@ except ImportError:
             def load_config(self):
                 try:
                     self.config.read(self.config_file)
-                    logger.info(f"Wczytano konfigurację z pliku {self.config_file}")
+                    logger.info(
+                        f"Wczytano konfigurację z pliku {self.config_file}")
                 except Exception as e:
-                    logger.error(f"Błąd podczas wczytywania konfiguracji: {str(e)}", exc_info=True)
+                    logger.error(
+                        f"Błąd podczas wczytywania konfiguracji: {str(e)}", exc_info=True)
 
             def get_connection_string(self):
                 try:
-                    driver = self.config.get('DATABASE', 'driver', fallback='{SQL Server}')
+                    driver = self.config.get(
+                        'DATABASE', 'driver', fallback='{SQL Server}')
                     server = self.config.get('DATABASE', 'server')
                     database = self.config.get('DATABASE', 'database')
                     uid = self.config.get('DATABASE', 'UID', fallback='')
                     pwd = self.config.get('DATABASE', 'PWD', fallback='')
-                    trusted_connection = self.config.get('DATABASE', 'trusted_connection', fallback='no')
+                    trusted_connection = self.config.get(
+                        'DATABASE', 'trusted_connection', fallback='no')
 
                     if trusted_connection.lower() == 'yes':
                         return f'DRIVER={driver};SERVER={server};DATABASE={database};Trusted_Connection=yes'
                     else:
                         return f'DRIVER={driver};SERVER={server};DATABASE={database};UID={uid};PWD={pwd}'
                 except Exception as e:
-                    logger.error(f"Błąd podczas generowania connection string: {str(e)}", exc_info=True)
+                    logger.error(
+                        f"Błąd podczas generowania connection string: {str(e)}", exc_info=True)
                     return None
-
 
         def generate_order_html(order_data, items):
             """Prosta implementacja generowania HTML dla zamówienia."""
@@ -227,13 +225,16 @@ def get_id_uzytkownika_by_order(order_number):
         cursor.execute(query, (order_number))
         result = cursor.fetchone()
         if result:
-            logger.info(f"ID użytkownika: {result[0]} dla zamówienia o numerze {order_number}")
+            logger.info(
+                f"ID użytkownika: {result[0]} dla zamówienia o numerze {order_number}")
             return result[0]
         else:
-            logger.warning(f"Nie znaleziono użytkownika dla zamówienia o numerze {order_number}")
+            logger.warning(
+                f"Nie znaleziono użytkownika dla zamówienia o numerze {order_number}")
             return None
     except Exception as e:
-        logger.error(f"Błąd podczas pobierania zamówienia {order_number}: {str(e)}", exc_info=True)
+        logger.error(
+            f"Błąd podczas pobierania zamówienia {order_number}: {str(e)}", exc_info=True)
         return None
 
 
@@ -259,12 +260,14 @@ def get_order_by_number(db_connection, order_number):
         order_row = cursor.fetchone()
 
         if not order_row:
-            logger.warning(f"Nie znaleziono zamówienia o numerze {order_number}")
+            logger.warning(
+                f"Nie znaleziono zamówienia o numerze {order_number}")
             return None
 
         # Konwertujemy wiersz na słownik
         order_columns = [column[0] for column in cursor.description]
-        order_data = {order_columns[i]: value for i, value in enumerate(order_row)}
+        order_data = {order_columns[i]: value for i,
+                      value in enumerate(order_row)}
 
         # Pobierz dane kontrahenta
         kontrahent_id = order_data.get('ID_KONTRAHENTA')
@@ -278,15 +281,19 @@ def get_order_by_number(db_connection, order_number):
             kontrahent_row = cursor.fetchone()
 
             if kontrahent_row:
-                kontrahent_columns = [column[0] for column in cursor.description]
-                kontrahent_data = {kontrahent_columns[i]: value for i, value in enumerate(kontrahent_row)}
+                kontrahent_columns = [column[0]
+                                      for column in cursor.description]
+                kontrahent_data = {
+                    kontrahent_columns[i]: value for i, value in enumerate(kontrahent_row)}
 
                 # Dodaj dane kontrahenta jako podsłownik
                 order_data['kontrahent'] = kontrahent_data
 
         # Log diagnostyczny
-        logger.info(f"Kod kreskowy zamówienia: {order_data.get('KOD_KRESKOWY', '')}")
-        logger.info(f"Kod kreskowy kontrahenta: {kontrahent_data.get('KOD_KRESKOWY', '')}")
+        logger.info(
+            f"Kod kreskowy zamówienia: {order_data.get('KOD_KRESKOWY', '')}")
+        logger.info(
+            f"Kod kreskowy kontrahenta: {kontrahent_data.get('KOD_KRESKOWY', '')}")
 
         # Pobieramy pozycje zamówienia
         order_id = order_data.get('ID_ZAMOWIENIA')
@@ -305,7 +312,8 @@ def get_order_by_number(db_connection, order_number):
         # Konwertujemy pozycje na listę słowników
         items = []
         for row in position_rows:
-            position_dict = {position_columns[i]: value for i, value in enumerate(row)}
+            position_dict = {
+                position_columns[i]: value for i, value in enumerate(row)}
 
             # Zachowaj wartości z pozycji zamówienia
             zamowiono = position_dict.get('ZAMOWIONO')
@@ -321,7 +329,8 @@ def get_order_by_number(db_connection, order_number):
                 article_row = cursor.fetchone()
 
                 if article_row:
-                    article_columns = [column[0] for column in cursor.description]
+                    article_columns = [column[0]
+                                       for column in cursor.description]
 
                     # Przygotuj pusty słownik dla połączonych danych
                     item_dict = {}
@@ -343,14 +352,16 @@ def get_order_by_number(db_connection, order_number):
                 # Jeśli nie ma artykułu, dodaj tylko dane pozycji
                 items.append(position_dict)
 
-        logger.info(f"Znaleziono {len(items)} pozycji dla zamówienia {order_number}")
+        logger.info(
+            f"Znaleziono {len(items)} pozycji dla zamówienia {order_number}")
 
         # Dodaj informacje diagnostyczne o każdej pozycji
         for i, item in enumerate(items):
             item_id = item.get('ID_ARTYKULU')
             item_name = item.get('NAZWA', 'Nieznany artykuł')
             zamowiono = item.get('ZAMOWIONO', 0)
-            logger.info(f"Pozycja {i + 1}: ID={item_id}, Nazwa={item_name}, ZAMOWIONO={zamowiono}")
+            logger.info(
+                f"Pozycja {i + 1}: ID={item_id}, Nazwa={item_name}, ZAMOWIONO={zamowiono}")
 
         # Przygotuj wynikowy słownik w oczekiwanym formacie
         result = {
@@ -361,7 +372,8 @@ def get_order_by_number(db_connection, order_number):
         return result
 
     except Exception as e:
-        logger.error(f"Błąd podczas pobierania zamówienia {order_number}: {str(e)}", exc_info=True)
+        logger.error(
+            f"Błąd podczas pobierania zamówienia {order_number}: {str(e)}", exc_info=True)
         return None
 
 
@@ -413,7 +425,8 @@ def save_order_to_json(order_data, output_dir=None):
     except TypeError as e:
         logger.error(f"Błąd konwersji typów przy zapisie JSON: {str(e)}")
         # Prosta wersja konwersji jako zabezpieczenie
-        output_data = json.loads(json.dumps(order_data, default=lambda o: str(o)))
+        output_data = json.loads(json.dumps(
+            order_data, default=lambda o: str(o)))
 
     # Używamy tej samej konwencji nazewnictwa plików co w oryginalnym skrypcie
     output_file = get_path_order(order_number, output_dir, '.json')
@@ -426,7 +439,8 @@ def save_order_to_json(order_data, output_dir=None):
         # Obliczamy rozmiar pliku
         file_size = os.path.getsize(output_file)
 
-        logger.info(f"Zapisano dane zamówienia {order_number} do pliku {output_file} (rozmiar: {file_size} bajtów)")
+        logger.info(
+            f"Zapisano dane zamówienia {order_number} do pliku {output_file} (rozmiar: {file_size} bajtów)")
 
         # Wyświetl podsumowanie pozycji
         items = []
@@ -434,18 +448,22 @@ def save_order_to_json(order_data, output_dir=None):
             items = output_data['items']
 
         total_items = len(items)
-        logger.info(f"Podsumowanie: Zamówienie {order_number} zawiera {total_items} pozycji")
+        logger.info(
+            f"Podsumowanie: Zamówienie {order_number} zawiera {total_items} pozycji")
 
         # Sprawdź czy wszystkie pozycje mają kolumnę ZAMOWIONO
         if isinstance(items, list):
-            missing_zamowiono = [i for i, item in enumerate(items) if 'ZAMOWIONO' not in item]
+            missing_zamowiono = [i for i, item in enumerate(
+                items) if 'ZAMOWIONO' not in item]
             if missing_zamowiono:
-                logger.warning(f"Uwaga: {len(missing_zamowiono)} pozycji nie ma kolumny ZAMOWIONO")
+                logger.warning(
+                    f"Uwaga: {len(missing_zamowiono)} pozycji nie ma kolumny ZAMOWIONO")
 
         return output_file
 
     except Exception as e:
-        logger.error(f"Błąd podczas zapisywania danych zamówienia {order_number}: {str(e)}", exc_info=True)
+        logger.error(
+            f"Błąd podczas zapisywania danych zamówienia {order_number}: {str(e)}", exc_info=True)
         return None
 
 
@@ -527,7 +545,8 @@ def get_todays_orders(db_connection):
         # Tworzymy listę numerów zamówień
         order_numbers = [detail['numer'] for detail in order_details]
 
-        logger.info(f"Znaleziono {len(order_numbers)} zamówień z dzisiejszego dnia")
+        logger.info(
+            f"Znaleziono {len(order_numbers)} zamówień z dzisiejszego dnia")
 
         # Wyświetl szczegóły zamówień
         logger.info("Szczegóły znalezionych zamówień:")
@@ -538,7 +557,8 @@ def get_todays_orders(db_connection):
         return order_numbers
 
     except Exception as e:
-        logger.error(f"Błąd podczas pobierania dzisiejszych zamówień: {str(e)}", exc_info=True)
+        logger.error(
+            f"Błąd podczas pobierania dzisiejszych zamówień: {str(e)}", exc_info=True)
         return []
 
 
@@ -569,7 +589,8 @@ def process_todays_orders(db_manager=None, printed_orders=None):
     # Inicjalizacja zbioru wydrukowanych zamówień jeśli nie podano
     if printed_orders is None:
         printed_orders = get_printed_orders()
-        logger.info(f"Znaleziono {len(printed_orders)} już wydrukowanych zamówień")
+        logger.info(
+            f"Znaleziono {len(printed_orders)} już wydrukowanych zamówień")
 
     try:
         # Pobierz dzisiejsze zamówienia
@@ -587,45 +608,54 @@ def process_todays_orders(db_manager=None, printed_orders=None):
                 normalized_number = normalize_filename(order_number)
                 # if normalized_number started not from ZO do not print
                 if not normalized_number.startswith('ZO'):
-                    logger.info(f"Zamówienie {order_number} nie zaczyna sie od ZO ... , pomijam...")
+                    logger.info(
+                        f"Zamówienie {order_number} nie zaczyna sie od ZO ... , pomijam...")
                     continue
 
                 if normalized_number in printed_orders:
-                    logger.info(f"Zamówienie {order_number} zostało już wydrukowane, pomijam...")
+                    logger.info(
+                        f"Zamówienie {order_number} zostało już wydrukowane, pomijam...")
                     continue
 
                 logger.info(f"Przetwarzanie zamówienia {order_number}")
 
                 # Pobierz dane zamówienia
-                order_data = get_order_by_number(db_manager.connection, order_number)
+                order_data = get_order_by_number(
+                    db_manager.connection, order_number)
 
                 if not order_data:
-                    logger.warning(f"Nie znaleziono danych dla zamówienia {order_number}")
+                    logger.warning(
+                        f"Nie znaleziono danych dla zamówienia {order_number}")
                     continue
 
                 # Zapisz dane do JSON
                 json_file = save_order_to_json(order_data)
 
                 if not json_file:
-                    logger.error(f"Nie udało się zapisać danych zamówienia {order_number} do pliku JSON")
+                    logger.error(
+                        f"Nie udało się zapisać danych zamówienia {order_number} do pliku JSON")
                     continue
 
                 # Generuj HTML dla zamówienia
                 html_content = generate_html_for_order(order_data)
 
                 if not html_content:
-                    logger.error(f"Nie udało się wygenerować HTML dla zamówienia {order_number}")
+                    logger.error(
+                        f"Nie udało się wygenerować HTML dla zamówienia {order_number}")
                     continue
 
                 # Zwróć parę (order_number, html_content)
-                logger.info(f"Przygotowano zamówienie {order_number} do wydruku")
+                logger.info(
+                    f"Przygotowano zamówienie {order_number} do wydruku")
                 yield (order_number, html_content)
 
             except Exception as e:
-                logger.error(f"Błąd podczas przetwarzania zamówienia {order_number}: {str(e)}", exc_info=True)
+                logger.error(
+                    f"Błąd podczas przetwarzania zamówienia {order_number}: {str(e)}", exc_info=True)
 
     except Exception as e:
-        logger.error(f"Błąd podczas wykonywania skryptu: {str(e)}", exc_info=True)
+        logger.error(
+            f"Błąd podczas wykonywania skryptu: {str(e)}", exc_info=True)
     finally:
         # Nie zamykamy połączenia jeśli zostało przekazane z zewnątrz
         pass
@@ -663,10 +693,12 @@ def main():
                     f.write(html_content)
                 logger.info(f"Zapisano HTML do pliku {html_file}")
             except Exception as e:
-                logger.error(f"Nie udało się zapisać HTML dla zamówienia {order_number}: {str(e)}")
+                logger.error(
+                    f"Nie udało się zapisać HTML dla zamówienia {order_number}: {str(e)}")
 
     except Exception as e:
-        logger.error(f"Błąd podczas wykonywania skryptu: {str(e)}", exc_info=True)
+        logger.error(
+            f"Błąd podczas wykonywania skryptu: {str(e)}", exc_info=True)
     finally:
         db_manager.close()
 

@@ -2,6 +2,7 @@ import win32print
 import time
 import logging
 
+
 def wait_for_print_job(printer_name, timeout=30):
     """Czeka na zakończenie zadania drukowania"""
     try:
@@ -47,15 +48,19 @@ def wait_for_print_job(printer_name, timeout=30):
                     if job['Status'] & win32print.JOB_STATUS_RENDERING_LOCALLY:
                         status_text.append("PRZYGOTOWYWANIE DO DRUKU")
 
-                    status_str = " | ".join(status_text) if status_text else "BRAK STATUSU"
-                    logging.info(f"Status zadania {job['JobId']}: {status_str}")
-                    logging.info(f"Szczegóły zadania: Dokument={job['pDocument']}, Użytkownik={job['pUserName']}")
+                    status_str = " | ".join(
+                        status_text) if status_text else "BRAK STATUSU"
+                    logging.info(
+                        f"Status zadania {job['JobId']}: {status_str}")
+                    logging.info(
+                        f"Szczegóły zadania: Dokument={job['pDocument']}, Użytkownik={job['pUserName']}")
 
                     if job['Status'] & win32print.JOB_STATUS_ERROR:
                         logging.error(f"Błąd w zadaniu {job['JobId']}")
                         return False
                     elif job['Status'] & win32print.JOB_STATUS_COMPLETE:
-                        logging.info(f"Zadanie {job['JobId']} zostało zakończone pomyślnie")
+                        logging.info(
+                            f"Zadanie {job['JobId']} zostało zakończone pomyślnie")
                         return True
             elif job_found:
                 logging.info("Zadanie zostało usunięte z kolejki")
@@ -63,8 +68,10 @@ def wait_for_print_job(printer_name, timeout=30):
 
             time.sleep(1)  # Poczekaj 1 sekundę przed następnym sprawdzeniem
 
-        logging.warning("Przekroczono czas oczekiwania na zakończenie drukowania")
+        logging.warning(
+            "Przekroczono czas oczekiwania na zakończenie drukowania")
         return False
     except Exception as e:
-        logging.error(f"Błąd podczas oczekiwania na zakończenie drukowania: {str(e)}")
+        logging.error(
+            f"Błąd podczas oczekiwania na zakończenie drukowania: {str(e)}")
         return False

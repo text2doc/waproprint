@@ -17,10 +17,12 @@ import tempfile
 import win32com.client
 import platform
 
+
 def print_document_by_printer(file_path, printer_name):
     """Drukuje dokument używając wskazanej drukarki"""
     try:
-        logging.info(f"=== Rozpoczynam proces drukowania na drukarce: {printer_name} ===")
+        logging.info(
+            f"=== Rozpoczynam proces drukowania na drukarce: {printer_name} ===")
 
         # Sprawdź środowisko
         if not check_environment():
@@ -48,14 +50,16 @@ def print_document_by_printer(file_path, printer_name):
 
             # Wyślij do druku
             item.InvokeVerb("Print")
-            logging.info(f"Wysłano dokument {abs_file_path} do druku na {printer_name}")
+            logging.info(
+                f"Wysłano dokument {abs_file_path} do druku na {printer_name}")
 
             # Poczekaj chwilę, aby dokument został wysłany do kolejki
             time.sleep(2)
             return True
 
         except Exception as e:
-            logging.error(f"Błąd podczas wykonywania wydruku na {printer_name}: {str(e)}")
+            logging.error(
+                f"Błąd podczas wykonywania wydruku na {printer_name}: {str(e)}")
             return False
 
     except Exception as e:

@@ -30,7 +30,8 @@ def parse_html(html_content, calculate_dimensions_func=None, height_dots=0):
         if height_dots == 0 and calculate_dimensions_func:
             estimated_height = calculate_dimensions_func(soup)
             height_dots = estimated_height
-            logging.info(f"Automatycznie ustalona wysokość etykiety: {height_dots} punktów")
+            logging.info(
+                f"Automatycznie ustalona wysokość etykiety: {height_dots} punktów")
 
         return soup, height_dots
     except Exception as e:
@@ -50,7 +51,8 @@ def extract_style_info(element):
     """
     style_info = {
         'alignment': 'L',  # Domyślnie wyrównanie do lewej
-        'font_type': None,  # Rodzaj czcionki (będzie określony na podstawie tagu)
+        # Rodzaj czcionki (będzie określony na podstawie tagu)
+        'font_type': None,
         'is_bold': False,
         'is_italic': False
     }
@@ -68,7 +70,8 @@ def extract_style_info(element):
 
     # Sprawdź klasy
     if element.has_attr('class'):
-        classes = element['class'] if isinstance(element['class'], list) else [element['class']]
+        classes = element['class'] if isinstance(
+            element['class'], list) else [element['class']]
         if 'title' in classes:
             style_info['font_type'] = 'header'
             style_info['alignment'] = 'C'

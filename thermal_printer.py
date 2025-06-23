@@ -14,11 +14,14 @@ try:
 except ImportError:
     WIN32_AVAILABLE = False
     if sys.platform == 'win32':
-        logging.warning("pywin32 is not installed. Windows printing functionality will be disabled.")
+        logging.warning(
+            "pywin32 is not installed. Windows printing functionality will be disabled.")
     else:
-        logging.info("Non-Windows platform detected. Windows printing functionality is not available.")
+        logging.info(
+            "Non-Windows platform detected. Windows printing functionality is not available.")
 
 # thermal_printer.py
+
 
 class ThermalPrinterManager:
     """
@@ -86,9 +89,11 @@ class ThermalPrinterManager:
             try:
                 with open(config_file, 'r', encoding='utf-8') as f:
                     self.printers_config = json.load(f)
-                self.logger.info(f"Wczytano konfigurację drukarek z {config_file}")
+                self.logger.info(
+                    f"Wczytano konfigurację drukarek z {config_file}")
             except Exception as e:
-                self.logger.error(f"Błąd podczas wczytywania konfiguracji drukarek: {str(e)}")
+                self.logger.error(
+                    f"Błąd podczas wczytywania konfiguracji drukarek: {str(e)}")
 
         # Wykryj dostępne drukarki
         self.detect_thermal_printers()
@@ -113,20 +118,23 @@ class ThermalPrinterManager:
 
                 if printer_family:
                     # Określ specyfikacje drukarki
-                    printer_specs = self._get_printer_specs(printer_name, printer_family)
+                    printer_specs = self._get_printer_specs(
+                        printer_name, printer_family)
                     thermal_printers[printer_name] = {
                         'family': printer_family,
                         'port': printer['port'],
                         'driver': printer['driver'],
                         'specs': printer_specs
                     }
-                    self.logger.info(f"Wykryto drukarkę termiczną: {printer_name} (rodzina: {printer_family})")
+                    self.logger.info(
+                        f"Wykryto drukarkę termiczną: {printer_name} (rodzina: {printer_family})")
 
             self.detected_printers = thermal_printers
             return thermal_printers
 
         except Exception as e:
-            self.logger.error(f"Błąd podczas wykrywania drukarek termicznych: {str(e)}")
+            self.logger.error(
+                f"Błąd podczas wykrywania drukarek termicznych: {str(e)}")
             return {}
 
     def _detect_printer_family(self, printer_name: str) -> Optional[str]:
@@ -152,7 +160,8 @@ class ThermalPrinterManager:
                     return family
 
         # Sprawdź dodatkowe wskazówki, które mogą sugerować, że jest to drukarka termiczna
-        thermal_hints = ["thermal", "label", "etykiet", "tag", "receipt", "paragon", "ticket", "bilet"]
+        thermal_hints = ["thermal", "label", "etykiet",
+                         "tag", "receipt", "paragon", "ticket", "bilet"]
         for hint in thermal_hints:
             if hint in printer_name_lower:
                 return "generic"  # Prawdopodobnie drukarka termiczna, ale nie znamy dokładnej rodziny
@@ -175,7 +184,8 @@ class ThermalPrinterManager:
             return self.printers_config[printer_name].get('specs', {})
 
         # Pobierz domyślne ustawienia dla rodziny drukarek
-        family_defaults = self.KNOWN_PRINTER_FAMILIES.get(printer_family, self.KNOWN_PRINTER_FAMILIES['generic'])
+        family_defaults = self.KNOWN_PRINTER_FAMILIES.get(
+            printer_family, self.KNOWN_PRINTER_FAMILIES['generic'])
 
         # Próba wykrycia rozdzielczości (DPI) z nazwy drukarki
         dpi = family_defaults['default_dpi']
@@ -260,11 +270,14 @@ class ThermalPrinterManager:
         """
         try:
             with open(config_file, 'w', encoding='utf-8') as f:
-                json.dump(self.printers_config, f, indent=4, ensure_ascii=False)
-            self.logger.info(f"Zapisano konfigurację drukarek do {config_file}")
+                json.dump(self.printers_config, f,
+                          indent=4, ensure_ascii=False)
+            self.logger.info(
+                f"Zapisano konfigurację drukarek do {config_file}")
             return True
         except Exception as e:
-            self.logger.error(f"Błąd podczas zapisywania konfiguracji drukarek: {str(e)}")
+            self.logger.error(
+                f"Błąd podczas zapisywania konfiguracji drukarek: {str(e)}")
             return False
 
     def set_default_thermal_printer(self, printer_name: str) -> bool:
@@ -278,7 +291,8 @@ class ThermalPrinterManager:
         - True, jeśli operacja się powiodła, False w przeciwnym razie
         """
         if printer_name not in self.detected_printers:
-            self.logger.error(f"Drukarka {printer_name} nie jest dostępna w systemie")
+            self.logger.error(
+                f"Drukarka {printer_name} nie jest dostępna w systemie")
             return False
 
         # Usuń flagę domyślnej drukarki dla wszystkich drukarek
@@ -294,7 +308,8 @@ class ThermalPrinterManager:
         self.printers_config[printer_name]['family'] = self.detected_printers[printer_name]['family']
         self.printers_config[printer_name]['specs'] = self.detected_printers[printer_name]['specs']
 
-        self.logger.info(f"Ustawiono drukarkę {printer_name} jako domyślną drukarkę termiczną")
+        self.logger.info(
+            f"Ustawiono drukarkę {printer_name} jako domyślną drukarkę termiczną")
         return True
 
     def get_printer_status(self, printer_name: str) -> Dict[str, Any]:
@@ -359,7 +374,8 @@ class ThermalPrinterManager:
                 # Dodatkowe informacje o drukarce
                 result['attributes'] = printer_info.get('Attributes', 0)
                 result['jobs_count'] = printer_info.get('cJobs', 0)
-                result['printer_name'] = printer_info.get('pPrinterName', printer_name)
+                result['printer_name'] = printer_info.get(
+                    'pPrinterName', printer_name)
                 result['location'] = printer_info.get('pLocation', '')
                 result['port'] = printer_info.get('pPortName', '')
 
@@ -389,7 +405,8 @@ class ThermalPrinterManager:
             finally:
                 win32print.ClosePrinter(hPrinter)
         except Exception as e:
-            self.logger.error(f"Błąd podczas pobierania zadań drukarki {printer_name}: {str(e)}")
+            self.logger.error(
+                f"Błąd podczas pobierania zadań drukarki {printer_name}: {str(e)}")
 
         return jobs
 
@@ -406,8 +423,10 @@ class ThermalPrinterManager:
         try:
             handle = win32print.OpenPrinter(printer_name)
             try:
-                win32print.SetPrinter(handle, 0, None, win32print.PRINTER_CONTROL_PURGE)
-                self.logger.info(f"Kolejka drukarki {printer_name} została wyczyszczona.")
+                win32print.SetPrinter(
+                    handle, 0, None, win32print.PRINTER_CONTROL_PURGE)
+                self.logger.info(
+                    f"Kolejka drukarki {printer_name} została wyczyszczona.")
                 return {
                     'success': True,
                     'message': f"Kolejka drukarki {printer_name} została wyczyszczona."
@@ -415,7 +434,8 @@ class ThermalPrinterManager:
             finally:
                 win32print.ClosePrinter(handle)
         except Exception as e:
-            self.logger.error(f"Błąd podczas czyszczenia kolejki drukarki {printer_name}: {str(e)}")
+            self.logger.error(
+                f"Błąd podczas czyszczenia kolejki drukarki {printer_name}: {str(e)}")
             return {
                 'success': False,
                 'message': f"Błąd podczas czyszczenia kolejki drukarki {printer_name}: {str(e)}"
@@ -434,8 +454,10 @@ class ThermalPrinterManager:
         try:
             try:
                 import subprocess
-                subprocess.run(['rundll32', 'printui.dll,PrintUIEntry', '/k', '/n', printer_name], check=True)
-                self.logger.info(f"Kolejka drukarki {printer_name} została wyczyszczona.")
+                subprocess.run(
+                    ['rundll32', 'printui.dll,PrintUIEntry', '/k', '/n', printer_name], check=True)
+                self.logger.info(
+                    f"Kolejka drukarki {printer_name} została wyczyszczona.")
                 return {
                     'success': True,
                     'message': f"Kolejka drukarki {printer_name} została wyczyszczona."
@@ -443,7 +465,8 @@ class ThermalPrinterManager:
             finally:
                 pass
         except Exception as e:
-            self.logger.error(f"Błąd podczas czyszczenia kolejki drukarki {printer_name}: {str(e)}")
+            self.logger.error(
+                f"Błąd podczas czyszczenia kolejki drukarki {printer_name}: {str(e)}")
             return {
                 'success': False,
                 'message': f"Błąd podczas czyszczenia kolejki drukarki {printer_name}: {str(e)}"
@@ -480,25 +503,28 @@ class ThermalPrinterManager:
                         'message': "Błąd: Brak dostępnych drukarek termicznych.",
                         'status': 'error'
                     }
-                self.logger.info(f"Używam domyślnej drukarki termicznej: {printer_name}")
+                self.logger.info(
+                    f"Używam domyślnej drukarki termicznej: {printer_name}")
 
             # Sprawdź, czy drukarka istnieje w systemie
             all_printers = self.get_available_printers()
             printer_names = [printer['name'] for printer in all_printers]
 
             if printer_name not in printer_names:
-                self.logger.error(f"Drukarka '{printer_name}' nie została znaleziona w systemie.")
+                self.logger.error(
+                    f"Drukarka '{printer_name}' nie została znaleziona w systemie.")
                 return {
                     'success': False,
                     'message': f"Błąd: Drukarka '{printer_name}' nie została znaleziona w systemie. "
-                               f"Dostępne drukarki: {', '.join(printer_names)}",
+                    f"Dostępne drukarki: {', '.join(printer_names)}",
                     'status': 'error'
                 }
 
             # Sprawdź status drukarki przed wydrukiem
             printer_status = self.get_printer_status(printer_name)
             if not printer_status['ready']:
-                self.logger.warning(f"Drukarka {printer_name} nie jest gotowa: {printer_status['status_message']}")
+                self.logger.warning(
+                    f"Drukarka {printer_name} nie jest gotowa: {printer_status['status_message']}")
                 return {
                     'success': False,
                     'message': f"Drukarka {printer_name} nie jest gotowa: {printer_status['status_message']}",
@@ -506,12 +532,14 @@ class ThermalPrinterManager:
                 }
 
             # Wczytaj i przygotuj zawartość pliku ZPL
-            zpl_content = self._prepare_zpl_content(zpl_file_path, printer_name)
+            zpl_content = self._prepare_zpl_content(
+                zpl_file_path, printer_name)
             if isinstance(zpl_content, dict) and not zpl_content.get('success', False):
                 return zpl_content
 
             # Drukowanie
-            self.logger.info(f"Rozpoczynam drukowanie pliku {zpl_file_path} na drukarce {printer_name}...")
+            self.logger.info(
+                f"Rozpoczynam drukowanie pliku {zpl_file_path} na drukarce {printer_name}...")
 
             # Funkcja pomocnicza dla czystszego kodu
             result = self._send_to_printer(printer_name, zpl_content)
@@ -536,7 +564,7 @@ class ThermalPrinterManager:
                 self.clear_printer_queue2(printer_name)
 
                 # Spróbuj wydrukować bezpośrednio przez port
-                #direct_result = self._try_alternative_printing(zpl_file_path, printer_name)
+                # direct_result = self._try_alternative_printing(zpl_file_path, printer_name)
                 # if direct_result['success']:
                 #     return {
                 #         'success': True,
@@ -550,7 +578,8 @@ class ThermalPrinterManager:
                 #         'status': 'error'
                 #     }
             else:
-                self.logger.info(f"Plik {zpl_file_path} został pomyślnie wydrukowany na drukarce {printer_name}.")
+                self.logger.info(
+                    f"Plik {zpl_file_path} został pomyślnie wydrukowany na drukarce {printer_name}.")
                 return {
                     'success': True,
                     'message': f"Plik {zpl_file_path} został pomyślnie wydrukowany na drukarce {printer_name}.",
@@ -558,7 +587,8 @@ class ThermalPrinterManager:
                 }
 
         except Exception as e:
-            self.logger.exception(f"Wystąpił nieoczekiwany błąd podczas drukowania: {str(e)}")
+            self.logger.exception(
+                f"Wystąpił nieoczekiwany błąd podczas drukowania: {str(e)}")
             return {
                 'success': False,
                 'message': f"Wystąpił błąd podczas drukowania: {str(e)}",
@@ -609,17 +639,19 @@ class ThermalPrinterManager:
 
             # Dla drukarek innych niż Zebra, które nie używają ZPL, konwertuj dane
             elif printer_family != 'zebra' and start_command and end_command:
-                # Jeśli plik jest w formacie ZPL, ale drukarka nie obsługuje ZPL, 
+                # Jeśli plik jest w formacie ZPL, ale drukarka nie obsługuje ZPL,
                 # spróbuj konwertować do odpowiedniego formatu (na razie tylko usuwamy ZPL tags)
                 if zpl_content.startswith(b'^XA') and zpl_content.endswith(b'^XZ'):
                     # Usuwamy tagi ZPL i dodajemy właściwe komendy dla danej rodziny drukarek
-                    zpl_content = zpl_content.replace(b'^XA', b'').replace(b'^XZ', b'')
+                    zpl_content = zpl_content.replace(
+                        b'^XA', b'').replace(b'^XZ', b'')
                     zpl_content = start_command + zpl_content + end_command
 
             return zpl_content
 
         except Exception as e:
-            self.logger.error(f"Błąd podczas przygotowywania pliku ZPL: {str(e)}")
+            self.logger.error(
+                f"Błąd podczas przygotowywania pliku ZPL: {str(e)}")
             return {
                 'success': False,
                 'message': f"Błąd podczas przygotowywania pliku ZPL: {str(e)}",
@@ -640,7 +672,8 @@ class ThermalPrinterManager:
         try:
             hPrinter = win32print.OpenPrinter(printer_name)
             try:
-                hJob = win32print.StartDocPrinter(hPrinter, 1, ("ZPL Document", None, "RAW"))
+                hJob = win32print.StartDocPrinter(
+                    hPrinter, 1, ("ZPL Document", None, "RAW"))
                 try:
                     win32print.StartPagePrinter(hPrinter)
                     win32print.WritePrinter(hPrinter, data)
@@ -662,7 +695,6 @@ class ThermalPrinterManager:
                 'status': 'error'
             }
 
-
     def _try_alternative_printing(self, zpl_file_path: str, printer_name: str) -> Dict[str, Any]:
         """
         Próbuje wydrukować plik ZPL za pomocą alternatywnych metod.
@@ -679,7 +711,8 @@ class ThermalPrinterManager:
         printer_family = printer_info.get('family', 'generic')
 
         # Pobierz potencjalne porty dla tej rodziny drukarek
-        potential_ports = self.KNOWN_PRINTER_FAMILIES.get(printer_family, {}).get('ports', ["USB", "COM"])
+        potential_ports = self.KNOWN_PRINTER_FAMILIES.get(
+            printer_family, {}).get('ports', ["USB", "COM"])
 
         # Lista portów do próby
         ports = []
@@ -695,7 +728,8 @@ class ThermalPrinterManager:
 
         # Dodaj port z informacji o drukarce, jeśli istnieje
         if 'port' in printer_info and printer_info['port']:
-            ports.insert(0, printer_info['port'])  # Dodaj na początek listy, aby był sprawdzany jako pierwszy
+            # Dodaj na początek listy, aby był sprawdzany jako pierwszy
+            ports.insert(0, printer_info['port'])
 
         # Usuń duplikaty
         ports = list(dict.fromkeys(ports))
@@ -706,7 +740,8 @@ class ThermalPrinterManager:
         for port in ports:
             try:
                 self.logger.info(f"Próbuję drukować na porcie {port}...")
-                result = self._print_direct_to_port(zpl_file_path, port, printer_family)
+                result = self._print_direct_to_port(
+                    zpl_file_path, port, printer_family)
                 if result['success']:
                     # Zapisz informację o porcie dla przyszłego użycia
                     if printer_name in self.printers_config:
@@ -716,14 +751,14 @@ class ThermalPrinterManager:
 
                     return result
             except Exception as e:
-                self.logger.warning(f"Nie udało się drukować na porcie {port}: {str(e)}")
+                self.logger.warning(
+                    f"Nie udało się drukować na porcie {port}: {str(e)}")
 
         return {
             'success': False,
             'message': "Nie udało się wydrukować za pomocą żadnej z alternatywnych metod.",
             'status': 'error'
         }
-
 
     def _print_direct_to_port(self, zpl_file_path: str, port_name: str, printer_family: str = 'generic',
                               baud_rate: int = 9600) -> Dict[str, Any]:
@@ -755,7 +790,8 @@ class ThermalPrinterManager:
             # Dostosuj dane do rodziny drukarki
             if printer_family != 'zebra':
                 # Pobierz specyfikacje dla rodziny drukarek
-                family_specs = self.KNOWN_PRINTER_FAMILIES.get(printer_family, self.KNOWN_PRINTER_FAMILIES['generic'])
+                family_specs = self.KNOWN_PRINTER_FAMILIES.get(
+                    printer_family, self.KNOWN_PRINTER_FAMILIES['generic'])
                 start_command = family_specs.get('start_command', '').encode()
                 end_command = family_specs.get('end_command', '').encode()
 
@@ -804,7 +840,8 @@ class ThermalPrinterManager:
             ser.write(data)
             ser.close()
 
-            self.logger.info(f"Plik {zpl_file_path} został wysłany bezpośrednio do portu {port_name}.")
+            self.logger.info(
+                f"Plik {zpl_file_path} został wysłany bezpośrednio do portu {port_name}.")
             return {
                 'success': True,
                 'message': f"Plik {zpl_file_path} został wysłany bezpośrednio do portu {port_name}."
@@ -816,12 +853,12 @@ class ThermalPrinterManager:
                 'message': "Biblioteka pyserial nie jest zainstalowana. Zainstaluj ją używając pip install pyserial."
             }
         except Exception as e:
-            self.logger.error(f"Błąd podczas wysyłania danych do portu {port_name}: {str(e)}")
+            self.logger.error(
+                f"Błąd podczas wysyłania danych do portu {port_name}: {str(e)}")
             return {
                 'success': False,
                 'message': f"Błąd podczas wysyłania danych do portu {port_name}: {str(e)}"
             }
-
 
     def format_zpl_for_printer(self, zpl_content: str, printer_name: Optional[str] = None) -> str:
         """
@@ -864,7 +901,6 @@ class ThermalPrinterManager:
         # Dla innych rodzin drukarek trzeba by zaimplementować odpowiednią konwersję
         # Na razie zwracamy oryginalną treść
         return zpl_content
-
 
     def check_and_print_pending_orders(self, printer_name: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -919,7 +955,8 @@ class ThermalPrinterManager:
                 file_basename = os.path.basename(zpl_file)
 
                 if file_basename not in printed_files:
-                    self.logger.info(f"Znaleziono niewydrukowany plik ZPL: {file_basename}")
+                    self.logger.info(
+                        f"Znaleziono niewydrukowany plik ZPL: {file_basename}")
 
                     # Drukuj plik
                     result = self.print_zpl_file(zpl_file, printer_name)
@@ -928,15 +965,18 @@ class ThermalPrinterManager:
                         success_count += 1
 
                         # Zapisz plik jako wydrukowany
-                        target_path = os.path.join(zo_printed_dir, file_basename)
+                        target_path = os.path.join(
+                            zo_printed_dir, file_basename)
                         with open(zpl_file, 'rb') as src_file:
                             with open(target_path, 'wb') as dest_file:
                                 dest_file.write(src_file.read())
 
-                        self.logger.info(f"Plik {file_basename} został pomyślnie wydrukowany i zapisany jako wydrukowany.")
+                        self.logger.info(
+                            f"Plik {file_basename} został pomyślnie wydrukowany i zapisany jako wydrukowany.")
                     else:
                         failed_count += 1
-                        self.logger.error(f"Nie udało się wydrukować pliku {file_basename}: {result['message']}")
+                        self.logger.error(
+                            f"Nie udało się wydrukować pliku {file_basename}: {result['message']}")
 
             return {
                 'success': True,
@@ -946,14 +986,14 @@ class ThermalPrinterManager:
             }
 
         except Exception as e:
-            self.logger.exception(f"Wystąpił błąd podczas sprawdzania niewydrukowanych zamówień: {str(e)}")
+            self.logger.exception(
+                f"Wystąpił błąd podczas sprawdzania niewydrukowanych zamówień: {str(e)}")
             return {
                 'success': False,
                 'message': f"Wystąpił błąd podczas sprawdzania niewydrukowanych zamówień: {str(e)}",
                 'success_count': 0,
                 'failed_count': 0
             }
-
 
     def _normalize_filename(self, name: str) -> str:
         """
@@ -968,7 +1008,6 @@ class ThermalPrinterManager:
         # Podstawowa implementacja - usuwamy znaki niedozwolone w nazwach plików
         import re
         return re.sub(r'[\\/*?:"<>|]', "_", name)
-
 
     def _get_zo_zpl_dir(self) -> str:
         """

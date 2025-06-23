@@ -38,7 +38,7 @@ if sys.platform == 'win32':
         sys.stderr.reconfigure(encoding='cp1250')
     # Ustawienie locale dla Windows
     locale.setlocale(locale.LC_ALL, 'Polish_Poland.1250')
-    
+
     # Wymuszenie kodowania dla konsoli Windows
     os.system('chcp 1250 > nul')
 
@@ -78,7 +78,7 @@ def show_logs():
             print(f"Błąd podczas odczytu pliku logów: {e}")
     else:
         print("\nPlik db_monitor.log nie istnieje")
-    
+
     # Wyświetl logi sql2html.log
     sql2html_log = os.path.join(SCRIPT_DIR, 'sql2html.log')
     if os.path.exists(sql2html_log):
@@ -97,24 +97,25 @@ def run_direct():
     try:
         logger.info("Bezpośrednie uruchomienie sql2html.py...")
         sql2html_path = os.path.join(SCRIPT_DIR, 'sql2html.py')
-        
+
         if not os.path.exists(sql2html_path):
-            logger.error(f"Nie znaleziono pliku sql2html.py w ścieżce: {sql2html_path}")
+            logger.error(
+                f"Nie znaleziono pliku sql2html.py w ścieżce: {sql2html_path}")
             return False
-            
+
         # Uruchom skrypt bezpośrednio
         python_exe = sys.executable
         cmd = [python_exe, sql2html_path]
-        
+
         logger.info(f"Uruchamiam komendę: {' '.join(cmd)}")
-        
+
         # Ustaw zmienne środowiskowe
         env = os.environ.copy()
         env['PYTHONIOENCODING'] = 'cp1250'
-        
+
         # Uruchom w podprocesie z poprawnym kodowaniem
         process = subprocess.Popen(
-            cmd, 
+            cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             cwd=SCRIPT_DIR,
@@ -122,21 +123,22 @@ def run_direct():
             encoding='cp1250',
             errors='replace'
         )
-        
+
         stdout, stderr = process.communicate()
-        
+
         logger.info(f"Kod wyjścia: {process.returncode}")
-        
+
         # Przetwórz wyjście z poprawnym kodowaniem
         if stdout:
             logger.info(f"Standardowe wyjście: {stdout}")
-        
+
         if stderr:
             logger.error(f"Błędy: {stderr}")
-            
+
         return process.returncode == 0
     except Exception as e:
-        logger.error(f"Błąd podczas bezpośredniego uruchamiania: {e}", exc_info=True)
+        logger.error(
+            f"Błąd podczas bezpośredniego uruchamiania: {e}", exc_info=True)
         return False
 
 
@@ -144,7 +146,7 @@ def repair_service():
     """Funkcja do naprawy usługi - zatrzymuje, usuwa i ponownie instaluje."""
     try:
         logger.info("Rozpoczynam naprawę usługi...")
-        
+
         # 1. Spróbuj zatrzymać usługę
         try:
             logger.info("Próbuję zatrzymać usługę...")
@@ -152,7 +154,7 @@ def repair_service():
             time.sleep(3)  # Daj czas na zatrzymanie
         except Exception as e:
             logger.error(f"Błąd podczas zatrzymywania usługi: {e}")
-        
+
         # 2. Spróbuj usunąć usługę
         try:
             logger.info("Próbuję usunąć usługę...")
@@ -160,7 +162,7 @@ def repair_service():
             time.sleep(2)  # Daj czas na usunięcie
         except Exception as e:
             logger.error(f"Błąd podczas usuwania usługi: {e}")
-        
+
         # 3. Zainstaluj usługę ponownie
         try:
             logger.info("Próbuję zainstalować usługę...")
@@ -178,7 +180,7 @@ def repair_service():
         except Exception as e:
             logger.error(f"Błąd podczas instalacji usługi: {e}")
             return False
-        
+
         # 4. Uruchom usługę
         try:
             logger.info("Próbuję uruchomić usługę...")
@@ -186,7 +188,7 @@ def repair_service():
         except Exception as e:
             logger.error(f"Błąd podczas uruchamiania usługi: {e}")
             return False
-        
+
         logger.info("Naprawa usługi zakończona powodzeniem")
         return True
     except Exception as e:
@@ -211,14 +213,17 @@ if __name__ == '__main__':
             show_logs()
         elif sys.argv[1] == 'test':
             # Bezpośredni test uruchomienia sql2html.py
-            logger.info("Uruchamianie testu bezpośredniego wywołania sql2html.py")
+            logger.info(
+                "Uruchamianie testu bezpośredniego wywołania sql2html.py")
             success = run_direct()
-            logger.info(f"Test zakończony {'sukcesem' if success else 'niepowodzeniem'}")
+            logger.info(
+                f"Test zakończony {'sukcesem' if success else 'niepowodzeniem'}")
         elif sys.argv[1] == 'repair.py':
             # Tryb naprawy usługi
             logger.info("Uruchamianie trybu naprawy usługi")
             success = repair_service()
-            logger.info(f"Naprawa zakończona {'sukcesem' if success else 'niepowodzeniem'}")
+            logger.info(
+                f"Naprawa zakończona {'sukcesem' if success else 'niepowodzeniem'}")
         else:
             # Standardowa obsługa komend Windows Service
             logger.info(f"Obsługa komendy Windows Service: {sys.argv[1]}")
@@ -227,7 +232,8 @@ if __name__ == '__main__':
                 servicemanager.PrepareToHostSingle(DBMonitorService)
                 win32serviceutil.HandleCommandLine(DBMonitorService)
             except Exception as e:
-                logger.error(f"Błąd podczas obsługi komendy Windows Service: {e}")
+                logger.error(
+                    f"Błąd podczas obsługi komendy Windows Service: {e}")
                 logger.error(traceback.format_exc())
                 raise
     except Exception as e:

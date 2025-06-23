@@ -58,7 +58,8 @@ class HtmlToZplConverter:
             'subheader': {'name': '0', 'width': 30, 'height': 30},
             'normal': {'name': '0', 'width': 25, 'height': 25},
             'small': {'name': '0', 'width': 20, 'height': 20},
-            'table_header': {'name': '0', 'width': 20, 'height': 20},  # Nagłówek tabeli używa small
+            # Nagłówek tabeli używa small
+            'table_header': {'name': '0', 'width': 20, 'height': 20},
             'table_cell': {'name': '0', 'width': 25, 'height': 25}
         }
 
@@ -100,7 +101,8 @@ class HtmlToZplConverter:
             'cp437': '^CI0',  # US Standard Code Page
             'utf8': '^CI28',  # UTF-8 (najlepsze przybliżenie)
             'iso8859-1': '^CI27',  # ISO 8859-1 Latin 1
-            'iso8859-2': '^CI29',  # ISO 8859-2 Latin 2 (najlepsze przybliżenie)
+            # ISO 8859-2 Latin 2 (najlepsze przybliżenie)
+            'iso8859-2': '^CI29',
             'windows-1250': '^CI29',  # Windows-1250 (najlepsze przybliżenie)
             'windows-1252': '^CI27'  # Windows-1252 (najlepsze przybliżenie)
         }
@@ -180,7 +182,8 @@ class HtmlToZplConverter:
             if style_content:
                 # Parsowanie CSS
                 try:
-                    cssutils.log.setLevel(logging.CRITICAL)  # Wyłącz zbędne logi
+                    # Wyłącz zbędne logi
+                    cssutils.log.setLevel(logging.CRITICAL)
                     sheet = cssutils.parseString(style_content)
                     for rule in sheet:
                         if rule.type == rule.STYLE_RULE:
@@ -340,16 +343,19 @@ class HtmlToZplConverter:
         column_count = table_data['column_count']
 
         # Obliczanie szerokości kolumn na podstawie CSS lub auto-detekcji
-        column_widths = self._calculate_column_widths(table, column_count, max_width - 2 * start_x)
+        column_widths = self._calculate_column_widths(
+            table, column_count, max_width - 2 * start_x)
 
         # Oblicz pozycje początkowe dla każdej kolumny
         column_positions = [start_x]
         for i in range(1, column_count):
-            column_positions.append(column_positions[i - 1] + column_widths[i - 1])
+            column_positions.append(
+                column_positions[i - 1] + column_widths[i - 1])
 
         # Dodaj poziomą linię na początku tabeli
         horizontal_line_y = self._get_safe_y_position(current_y)
-        zpl.append(f"^FO{start_x},{horizontal_line_y}^GB{max_width - 2 * start_x},1,1^FS")
+        zpl.append(
+            f"^FO{start_x},{horizontal_line_y}^GB{max_width - 2 * start_x},1,1^FS")
         current_y = horizontal_line_y + 15  # Odstęp po linii poziomej
 
         # Przetwórz każdy wiersz
@@ -360,7 +366,8 @@ class HtmlToZplConverter:
             # Przetwórz każdą komórkę w wierszu
             for col_index, cell in enumerate(cells):
                 if 'skip' in cell and cell['skip']:
-                    continue  # Pomijamy już przetworzone komórki (część colspan/rowspan)
+                    # Pomijamy już przetworzone komórki (część colspan/rowspan)
+                    continue
 
                 # Pobierz dane komórki
                 cell_tag = cell['tag']
@@ -383,7 +390,8 @@ class HtmlToZplConverter:
                 # Oblicz pozycję X i szerokość komórki z uwzględnieniem colspan
                 cell_x = column_positions[col_index]
                 if colspan > 1 and col_index + colspan <= len(column_widths):
-                    cell_width = sum(column_widths[col_index:col_index + colspan])
+                    cell_width = sum(
+                        column_widths[col_index:col_index + colspan])
                 else:
                     cell_width = column_widths[col_index]
 
@@ -435,7 +443,8 @@ class HtmlToZplConverter:
 
             # Dodaj poziomą linię na końcu wiersza
             horizontal_line_y = self._get_safe_y_position(current_y - 10)
-            zpl.append(f"^FO{start_x},{horizontal_line_y}^GB{max_width - 2 * start_x},1,1^FS")
+            zpl.append(
+                f"^FO{start_x},{horizontal_line_y}^GB{max_width - 2 * start_x},1,1^FS")
             current_y = horizontal_line_y + 15  # Odstęp po linii poziomej
 
         return "\n".join(zpl), current_y
@@ -528,17 +537,20 @@ class HtmlToZplConverter:
             column_widths_percent.extend([32, 15, 15, 15, 15])  # Suma = 100%
         elif column_count == 7:  # Dla tabeli z 7 kolumnami
             # [Lp.][Nazwa towaru][Ilość/J. miary][Cena netto][Rabat][Cena jedn.][Wartość]
-            column_widths_percent.extend([30, 12, 13, 12, 13, 12])  # Suma = 100%
+            column_widths_percent.extend(
+                [30, 12, 13, 12, 13, 12])  # Suma = 100%
         else:
             # Domyślnie: równy podział pozostałej przestrzeni
             remaining_percent = 92  # 100% - 8% (dla pierwszej kolumny)
             remaining_columns = column_count - 1
             if remaining_columns > 0:
                 percent_per_column = remaining_percent / remaining_columns
-                column_widths_percent.extend([percent_per_column] * remaining_columns)
+                column_widths_percent.extend(
+                    [percent_per_column] * remaining_columns)
 
         # Przelicz procenty na rzeczywiste szerokości w punktach
-        column_widths = [int(available_width * percent / 100) for percent in column_widths_percent]
+        column_widths = [int(available_width * percent / 100)
+                         for percent in column_widths_percent]
 
         # Jeśli mamy mniej zdefiniowanych szerokości niż kolumn, dodaj brakujące
         while len(column_widths) < column_count:
@@ -565,10 +577,12 @@ class HtmlToZplConverter:
         # Kod kreskowy CODE128
         zpl = []
         zpl.append(f"^FO{x},{y}")  # Pozycja początkowa
-        zpl.append("^BCN,100,Y,N,N")  # Kod kreskowy CODE128, wysokość 100, czytelny, bez rotacji
+        # Kod kreskowy CODE128, wysokość 100, czytelny, bez rotacji
+        zpl.append("^BCN,100,Y,N,N")
         zpl.append(f"^FD{barcode_data}")  # Dane do zakodowania
         zpl.append("^FS")  # Koniec pola
-        return "\n".join(zpl), y + 150  # 150 punktów na kod kreskowy + margines
+        # 150 punktów na kod kreskowy + margines
+        return "\n".join(zpl), y + 150
 
     def html_to_zpl(self, html_content):
         """
@@ -617,7 +631,8 @@ class HtmlToZplConverter:
             barcode_data = barcode_svg.get('data-barcode', '')
             if barcode_data:
                 # Dodaj kod kreskowy w prawym górnym rogu
-                barcode_zpl, _ = self._render_barcode(barcode_data, self.width_dots - 250, self.margin_dots)
+                barcode_zpl, _ = self._render_barcode(
+                    barcode_data, self.width_dots - 250, self.margin_dots)
                 zpl.append(barcode_zpl)
 
         # Rejestr zajętych pozycji Y
@@ -702,7 +717,8 @@ class HtmlToZplConverter:
                     parent = element.parent
                     if parent and parent.name not in ['td', 'th']:
                         # Renderuj tekst z domyślnym rozmiarem czcionki
-                        safe_y = self._get_safe_y_position(current_y, self.font_types['normal']['height'])
+                        safe_y = self._get_safe_y_position(
+                            current_y, self.font_types['normal']['height'])
                         text_zpl, new_y = self._render_text_block(
                             element.strip(),
                             self.margin_dots,

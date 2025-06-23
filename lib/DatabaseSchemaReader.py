@@ -3,6 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class DatabaseSchemaReader:
     """
     A class to read database schema information.
@@ -30,12 +31,14 @@ class DatabaseSchemaReader:
             cursor = conn.cursor()
 
             # Get all table names
-            cursor.execute("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'")
+            cursor.execute(
+                "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'")
             tables = [table[0] for table in cursor.fetchall()]
 
             for table_name in tables:
                 # Get column names for each table
-                cursor.execute(f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{table_name}'")
+                cursor.execute(
+                    f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{table_name}'")
                 columns = [column[0] for column in cursor.fetchall()]
                 tables_and_columns[table_name] = columns
 

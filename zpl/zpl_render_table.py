@@ -47,7 +47,8 @@ def render_table(table, start_x, start_y, width_dots, font_types, render_text_fu
 
     # Analizuj zawartość komórek, aby lepiej dostosować szerokości kolumn
     column_content_lengths = [0] * max_columns
-    column_is_numeric = [True] * max_columns  # Zakładamy początkowo, że wszystkie kolumny są numeryczne
+    # Zakładamy początkowo, że wszystkie kolumny są numeryczne
+    column_is_numeric = [True] * max_columns
 
     for row in rows:
         cells = row.find_all(['th', 'td'])
@@ -75,7 +76,8 @@ def render_table(table, start_x, start_y, width_dots, font_types, render_text_fu
                     text_length = len(text) * 1.5
                 else:
                     text_length = len(text)
-                column_content_lengths[i] = max(column_content_lengths[i], text_length)
+                column_content_lengths[i] = max(
+                    column_content_lengths[i], text_length)
 
     # Dostosuj szerokości kolumn na podstawie zawartości
     total_content_length = sum(column_content_lengths)
@@ -89,17 +91,20 @@ def render_table(table, start_x, start_y, width_dots, font_types, render_text_fu
             # Każda kolumna otrzymuje co najmniej 10% szerokości
             min_width = usable_width * 0.1 / max_columns
             # Reszta jest rozdzielana proporcjonalnie
-            proportional_width = (length / total_content_length) * usable_width * 0.9
+            proportional_width = (
+                length / total_content_length) * usable_width * 0.9
             column_width = int(min_width + proportional_width)
 
             # Dodatkowe sprawdzenie dla komórek z długim tekstem
             # Konwertuj znaki na przybliżoną szerokość w punktach (dots)
-            char_width = font_types['table_cell']['width'] * 0.6  # Przybliżona szerokość znaku
+            # Przybliżona szerokość znaku
+            char_width = font_types['table_cell']['width'] * 0.6
             text_width = length * char_width
 
             # Jeśli tekst jest zbyt szeroki, daj tej kolumnie więcej miejsca
             if text_width > column_width:
-                column_width = min(int(text_width), int(usable_width * 0.4))  # Maks 40% dostępnej szerokości
+                # Maks 40% dostępnej szerokości
+                column_width = min(int(text_width), int(usable_width * 0.4))
 
             column_widths.append(column_width)
 
@@ -114,7 +119,8 @@ def render_table(table, start_x, start_y, width_dots, font_types, render_text_fu
         cells = row.find_all(['th', 'td'])
 
         # Sprawdź, czy to wiersz nagłówka
-        is_header = row.find_parent('thead') is not None or any(cell.name == 'th' for cell in cells)
+        is_header = row.find_parent('thead') is not None or any(
+            cell.name == 'th' for cell in cells)
 
         # Oblicz wysokość wiersza na podstawie zawartości
         row_height = font_types['table_header' if is_header else 'table_cell']['height'] + 10
@@ -133,7 +139,8 @@ def render_table(table, start_x, start_y, width_dots, font_types, render_text_fu
 
         # Narysuj tło wiersza nagłówka
         if is_header:
-            zpl.append(f"^FO{start_x},{current_y}^GB{usable_width},{row_height},2^FS")
+            zpl.append(
+                f"^FO{start_x},{current_y}^GB{usable_width},{row_height},2^FS")
 
         # Rysuj komórki
         current_x = start_x
@@ -149,7 +156,8 @@ def render_table(table, start_x, start_y, width_dots, font_types, render_text_fu
 
             # Sprawdź indywidualne wyrównanie komórki na podstawie klas i stylów
             if cell.has_attr('class'):
-                classes = cell['class'] if isinstance(cell['class'], list) else [cell['class']]
+                classes = cell['class'] if isinstance(
+                    cell['class'], list) else [cell['class']]
                 if 'currency' in classes or 'right' in classes:
                     alignment = 'R'
                 elif 'center' in classes:
@@ -181,7 +189,8 @@ def render_table(table, start_x, start_y, width_dots, font_types, render_text_fu
             zpl.append(cell_zpl)
 
             # Narysuj obramowanie komórki
-            zpl.append(f"^FO{current_x},{current_y}^GB{cell_width},{row_height},1^FS")
+            zpl.append(
+                f"^FO{current_x},{current_y}^GB{cell_width},{row_height},1^FS")
 
             # Przesuń x dla następnej komórki
             current_x += cell_width
@@ -220,14 +229,17 @@ def analyze_table_structure(table):
     result['rows'] = len(rows)
 
     # Określ liczbę kolumn
-    result['columns'] = max([len(row.find_all(['td', 'th'])) for row in rows]) if rows else 0
+    result['columns'] = max([len(row.find_all(['td', 'th']))
+                            for row in rows]) if rows else 0
 
     # Sprawdź wiersze nagłówka
-    header_rows = table.find('thead').find_all('tr') if table.find('thead') else []
+    header_rows = table.find('thead').find_all(
+        'tr') if table.find('thead') else []
     result['header_rows'] = len(header_rows)
 
     # Sprawdź wiersze stopki
-    footer_rows = table.find('tfoot').find_all('tr') if table.find('tfoot') else []
+    footer_rows = table.find('tfoot').find_all(
+        'tr') if table.find('tfoot') else []
     result['footer_rows'] = len(footer_rows)
 
     # Sprawdź, czy tabela ma złożone komórki (colspan, rowspan)
@@ -250,7 +262,8 @@ def analyze_table_structure(table):
                 if not is_numeric and text:
                     column_is_numeric[i] = False
 
-    result['column_types'] = ['numeric' if is_num else 'text' for is_num in column_is_numeric]
+    result['column_types'] = [
+        'numeric' if is_num else 'text' for is_num in column_is_numeric]
 
     return result
 
@@ -287,7 +300,8 @@ def calculate_column_widths(table, usable_width, font_types):
                     text_length = len(text) * 1.5
                 else:
                     text_length = len(text)
-                column_content_lengths[i] = max(column_content_lengths[i], text_length)
+                column_content_lengths[i] = max(
+                    column_content_lengths[i], text_length)
 
     # Oblicz szerokości kolumn
     total_content_length = sum(column_content_lengths)
@@ -301,7 +315,8 @@ def calculate_column_widths(table, usable_width, font_types):
         # Każda kolumna otrzymuje co najmniej 10% szerokości
         min_width = usable_width * 0.1 / max_columns
         # Reszta jest rozdzielana proporcjonalnie
-        proportional_width = (length / total_content_length) * usable_width * 0.9
+        proportional_width = (
+            length / total_content_length) * usable_width * 0.9
         column_width = int(min_width + proportional_width)
 
         # Przybliżona szerokość znaku

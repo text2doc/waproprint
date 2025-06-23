@@ -9,6 +9,7 @@ from lib.log_config import get_logger
 
 logger = get_logger().getLogger(__name__)
 
+
 def get_zo_documents(db_manager):
     """Pobiera dokumenty ZO z bazy danych"""
     try:
@@ -26,10 +27,9 @@ def get_zo_documents(db_manager):
         WHERE d.RODZAJ_DOKUMENTU = 'ZO'
         ORDER BY d.DATA DESC, d.NUMER DESC
         """
-        
+
         return db_manager.execute_query(query)
-        
+
     except Exception as e:
         logger.error(f"Błąd podczas pobierania dokumentów: {e}")
         return []
-

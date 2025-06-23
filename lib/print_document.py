@@ -7,6 +7,7 @@ from lib.check_printer_queue import check_printer_queue
 from lib.print_with_adobe import print_with_adobe
 from lib.print_with_ghostscript import print_with_ghostscript
 
+
 def print_document(file_path):
     """Drukuje dokument używając domyślnej drukarki systemowej"""
     try:
@@ -16,7 +17,8 @@ def print_document(file_path):
             logging.error("Nie można pobrać domyślnej drukarki")
             return False
 
-        logging.info(f"=== Rozpoczynam proces drukowania na domyślnej drukarce: {printer_name} ===")
+        logging.info(
+            f"=== Rozpoczynam proces drukowania na domyślnej drukarce: {printer_name} ===")
 
         # Sprawdź środowisko
         if not check_environment():
@@ -41,13 +43,15 @@ def print_document(file_path):
             adobe_result = print_with_adobe(file_path, printer_name)
 
             if not adobe_result:
-                logging.info("Adobe Reader nie został znaleziony, próbuję alternatywnej metody")
+                logging.info(
+                    "Adobe Reader nie został znaleziony, próbuję alternatywnej metody")
 
                 # Spróbuj użyć Ghostscript
                 gs_result = print_with_ghostscript(file_path, printer_name)
 
                 if not gs_result:
-                    logging.error("Nie znaleziono ani Adobe Reader, ani Ghostscript")
+                    logging.error(
+                        "Nie znaleziono ani Adobe Reader, ani Ghostscript")
                     return False
 
                 return gs_result
@@ -61,4 +65,3 @@ def print_document(file_path):
     except Exception as e:
         logging.error(f"Błąd podczas drukowania: {str(e)}")
         return False
-

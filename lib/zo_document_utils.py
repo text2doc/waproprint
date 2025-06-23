@@ -9,6 +9,7 @@ from lib.log_config import get_logger
 
 logger = get_logger().getLogger(__name__)
 
+
 def get_zo_documents(db_manager):
     """Pobiera dokumenty ZO z bazy danych"""
     try:

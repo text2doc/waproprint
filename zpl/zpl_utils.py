@@ -30,7 +30,8 @@ def get_available_printers():
     if WINDOWS_PRINTING:
         try:
             # Pobierz listę drukarek za pomocą win32print
-            printers = win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)
+            printers = win32print.EnumPrinters(
+                win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)
             return [printer[2] for printer in printers]
         except Exception as e:
             logging.error(f"Błąd podczas pobierania listy drukarek: {e}")
@@ -39,15 +40,19 @@ def get_available_printers():
     try:
         if sys.platform == 'win32':
             # Windows - użycie wmic
-            result = subprocess.run('wmic printer get name', shell=True, capture_output=True, text=True, check=True)
+            result = subprocess.run(
+                'wmic printer get name', shell=True, capture_output=True, text=True, check=True)
             # Przetworzenie listy drukarek
-            drukarki = [line.strip() for line in result.stdout.split('\n') if line.strip() and line.strip() != 'Name']
+            drukarki = [line.strip() for line in result.stdout.split(
+                '\n') if line.strip() and line.strip() != 'Name']
             return drukarki
         else:
             # Linux/Mac - użycie lpstat
-            result = subprocess.run('lpstat -a', shell=True, capture_output=True, text=True, check=True)
+            result = subprocess.run(
+                'lpstat -a', shell=True, capture_output=True, text=True, check=True)
             # Przetworzenie listy drukarek
-            drukarki = [line.split()[0] for line in result.stdout.split('\n') if line.strip()]
+            drukarki = [line.split()[0]
+                        for line in result.stdout.split('\n') if line.strip()]
             return drukarki
     except Exception as e:
         logging.error(f"Błąd podczas pobierania listy drukarek: {e}")
@@ -68,12 +73,14 @@ def get_default_printer():
             # Windows bez win32print
             result = subprocess.run('wmic printer where default=TRUE get name',
                                     shell=True, capture_output=True, text=True, check=True)
-            lines = [line.strip() for line in result.stdout.split('\n') if line.strip() and line.strip() != 'Name']
+            lines = [line.strip() for line in result.stdout.split(
+                '\n') if line.strip() and line.strip() != 'Name']
             if lines:
                 return lines[0]
         else:
             # Linux/Mac
-            result = subprocess.run('lpstat -d', shell=True, capture_output=True, text=True, check=True)
+            result = subprocess.run(
+                'lpstat -d', shell=True, capture_output=True, text=True, check=True)
             output = result.stdout.strip()
             if 'system default destination:' in output:
                 return output.split('system default destination:')[1].strip()
@@ -93,7 +100,8 @@ def detect_zebra_printers():
     all_printers = get_available_printers()
 
     # Filtruj drukarki Zebra (na podstawie typowych nazw)
-    zebra_keywords = ['zebra', 'zdesigner', 'zt', 'zd', 'gk', 'gc', 'zp', 'tlp', 'lp']
+    zebra_keywords = ['zebra', 'zdesigner', 'zt',
+                      'zd', 'gk', 'gc', 'zp', 'tlp', 'lp']
 
     # Filtruj po nazwach
     zebra_printers = [printer for printer in all_printers
@@ -116,7 +124,8 @@ def is_zebra_printer(printer_name):
         return False
 
     # Typowe nazwy drukarek Zebra
-    zebra_keywords = ['zebra', 'zdesigner', 'zt', 'zd', 'gk', 'gc', 'zp', 'tlp', 'lp']
+    zebra_keywords = ['zebra', 'zdesigner', 'zt',
+                      'zd', 'gk', 'gc', 'zp', 'tlp', 'lp']
 
     # Sprawdź, czy nazwa drukarki zawiera jakiekolwiek słowo kluczowe
     return any(keyword in printer_name.lower() for keyword in zebra_keywords)
@@ -160,7 +169,8 @@ def get_printer_info(printer_name):
                 elif status_code & win32print.PRINTER_STATUS_OFFLINE:
                     printer_info['status'] = 'offline'
         except Exception as e:
-            logging.error(f"Błąd podczas pobierania informacji o drukarce: {e}")
+            logging.error(
+                f"Błąd podczas pobierania informacji o drukarce: {e}")
 
     return printer_info
 

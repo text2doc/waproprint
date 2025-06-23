@@ -4,6 +4,7 @@ import time
 import logging
 from datetime import datetime
 
+
 def move_to_printed(file_path, max_attempts=5, delay=1):
     """
     Przenosi wydrukowany dokument do folderu printed z obsługą zajętych plików.
@@ -15,7 +16,8 @@ def move_to_printed(file_path, max_attempts=5, delay=1):
     """
     try:
         # Użyj folderu printed w tym samym katalogu co skrypt
-        script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        script_dir = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__)))
         printed_folder = os.path.join(script_dir, 'printed')
 
         # Konwertuj ścieżki na absolutne
@@ -48,11 +50,13 @@ def move_to_printed(file_path, max_attempts=5, delay=1):
                     f"Plik jest używany przez inny proces. Próba {attempt}/{max_attempts}. Czekam {delay}s...")
                 time.sleep(delay)
             except Exception as e:
-                logging.error(f"Nieoczekiwany błąd podczas przenoszenia pliku: {str(e)}")
+                logging.error(
+                    f"Nieoczekiwany błąd podczas przenoszenia pliku: {str(e)}")
                 return False
 
         if not success:
-            logging.error(f"Nie udało się przenieść pliku po {max_attempts} próbach")
+            logging.error(
+                f"Nie udało się przenieść pliku po {max_attempts} próbach")
             return False
 
         return True

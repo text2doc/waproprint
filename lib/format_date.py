@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 def format_date(date_str):
     """Formatuje datę do czytelnej postaci"""
     try:

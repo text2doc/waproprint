@@ -15,13 +15,14 @@ from .logger import logger
 config = configparser.ConfigParser()
 config.read('config.ini')
 
+
 def convert_decimal_to_str(obj):
     """
     Rekurencyjnie konwertuje wszystkie wartości typu Decimal i datetime na stringi.
-    
+
     Args:
         obj: Obiekt do konwersji
-        
+
     Returns:
         Obiekt z przekonwertowanymi wartościami Decimal i datetime
     """
@@ -95,7 +96,8 @@ def diagnose_order_items(db_connection, order_number):
 
         # 3. Sprawdź szczegóły artykułów
         if results["items"]:
-            article_ids = [item["ID_ARTYKULU"] for item in results["items"] if item["ID_ARTYKULU"] is not None]
+            article_ids = [item["ID_ARTYKULU"]
+                           for item in results["items"] if item["ID_ARTYKULU"] is not None]
 
             if article_ids:
                 placeholder = ','.join(['?'] * len(article_ids))
@@ -117,8 +119,10 @@ def diagnose_order_items(db_connection, order_number):
                     })
 
                 # Sprawdź, czy artykuły istnieją w tabeli ARTYKUL
-                found_article_ids = [article["ID_ARTYKULU"] for article in results["articles"]]
-                missing_article_ids = [id for id in article_ids if id not in found_article_ids]
+                found_article_ids = [article["ID_ARTYKULU"]
+                                     for article in results["articles"]]
+                missing_article_ids = [
+                    id for id in article_ids if id not in found_article_ids]
 
                 if missing_article_ids:
                     results["missing_articles"] = missing_article_ids
@@ -126,7 +130,8 @@ def diagnose_order_items(db_connection, order_number):
         return results
 
     except Exception as e:
-        logger.error(f"Błąd podczas diagnostyki zamówienia {order_number}: {str(e)}", exc_info=True)
+        logger.error(
+            f"Błąd podczas diagnostyki zamówienia {order_number}: {str(e)}", exc_info=True)
         return {"error": str(e)}
 
 
@@ -152,7 +157,8 @@ def load_orders_from_sql(db_connection, order_id=None):
                 WHERE Z.NUMER = ?
             """
             cursor.execute(query, (order_id,))
-            logger.info(f"Wykonano zapytanie o zamówienie z numerem {order_id}")
+            logger.info(
+                f"Wykonano zapytanie o zamówienie z numerem {order_id}")
         else:
             query = """
                 SELECT Z.*, K.* FROM ZAMOWIENIE Z
@@ -163,7 +169,8 @@ def load_orders_from_sql(db_connection, order_id=None):
             logger.info("Wykonano zapytanie o wszystkie zamówienia")
 
         order_rows = cursor.fetchall()
-        logger.info(f"Zapytanie zwróciło {len(order_rows)} wierszy dla zamówień")
+        logger.info(
+            f"Zapytanie zwróciło {len(order_rows)} wierszy dla zamówień")
 
         if not order_rows:
             logger.warning(f"Nie znaleziono zamówienia z numerem {order_id}")
@@ -182,7 +189,8 @@ def load_orders_from_sql(db_connection, order_id=None):
             order_id_from_row = order.get('ID_ZAMOWIENIA')
             numer_zamowienia = order.get('NUMER', 'nieznany')
 
-            logger.info(f"Zamówienie: NUMER={numer_zamowienia}, ID_ZAMOWIENIA={order_id_from_row}")
+            logger.info(
+                f"Zamówienie: NUMER={numer_zamowienia}, ID_ZAMOWIENIA={order_id_from_row}")
 
             # Najpierw sprawdź, czy istnieją jakiekolwiek pozycje dla tego zamówienia
             check_query = """
@@ -193,11 +201,13 @@ def load_orders_from_sql(db_connection, order_id=None):
             count_row = cursor.fetchone()
             total_positions = count_row[0] if count_row else 0
 
-            logger.info(f"Zamówienie {numer_zamowienia} ma łącznie {total_positions} pozycji w bazie")
+            logger.info(
+                f"Zamówienie {numer_zamowienia} ma łącznie {total_positions} pozycji w bazie")
 
             # Jeśli nie ma pozycji, zakończ przetwarzanie tego zamówienia
             if total_positions == 0:
-                logger.warning(f"Brak pozycji dla zamówienia {numer_zamowienia}, dodaję pustą listę")
+                logger.warning(
+                    f"Brak pozycji dla zamówienia {numer_zamowienia}, dodaję pustą listę")
                 order['items'] = []
                 continue
 
@@ -217,7 +227,8 @@ def load_orders_from_sql(db_connection, order_id=None):
 
             # Jeśli nie ma pozycji z ZREALIZOWANO > 0, pobierz wszystkie pozycje
             # if len(item_rows) == 0:
-            logger.warning(f"Brak pozycji z ZREALIZOWANO > 0, pobieram wszystkie pozycje")
+            logger.warning(
+                f"Brak pozycji z ZREALIZOWANO > 0, pobieram wszystkie pozycje")
             query = """
                 SELECT PZ.*, A.*
                 FROM POZYCJA_ZAMOWIENIA PZ
@@ -227,11 +238,13 @@ def load_orders_from_sql(db_connection, order_id=None):
             """
             cursor.execute(query, (order_id_from_row,))
             item_rows = cursor.fetchall()
-            logger.info(f"Zapytanie o wszystkie pozycje zwróciło {len(item_rows)} wierszy")
+            logger.info(
+                f"Zapytanie o wszystkie pozycje zwróciło {len(item_rows)} wierszy")
 
             # Jeśli nadal nie ma pozycji, zakończ przetwarzanie tego zamówienia
             if not item_rows:
-                logger.warning(f"Nie znaleziono żadnych pozycji dla zamówienia {numer_zamowienia}")
+                logger.warning(
+                    f"Nie znaleziono żadnych pozycji dla zamówienia {numer_zamowienia}")
                 order['items'] = []
                 continue
 
@@ -278,15 +291,18 @@ def load_orders_from_sql(db_connection, order_id=None):
                 items.append(item)
 
                 # logger.info(f"Dodano pozycję: ID_ARTYKULU={article_id}, ZAMOWIONO={zamowiono}")
-                logger.info(f"Dodano pozycję: ID_ARTYKULU={article_id}, ZAMOWIONO={data['quantity']}")
+                logger.info(
+                    f"Dodano pozycję: ID_ARTYKULU={article_id}, ZAMOWIONO={data['quantity']}")
 
             order['items'] = items
-            logger.info(f"Dodano {len(items)} unikalnych pozycji do zamówienia {numer_zamowienia}")
+            logger.info(
+                f"Dodano {len(items)} unikalnych pozycji do zamówienia {numer_zamowienia}")
 
         return orders
 
     except Exception as e:
-        logger.error(f"Błąd podczas pobierania danych z SQL: {str(e)}", exc_info=True)
+        logger.error(
+            f"Błąd podczas pobierania danych z SQL: {str(e)}", exc_info=True)
         return []
 
 
@@ -386,62 +402,65 @@ def get_todays_orders(db_connection):
 
     return orders
 
+
 def save_order_to_json(order_data, order_items, output_dir=None):
     """
     Zapisuje dane zamówienia do pliku JSON.
-    
+
     Args:
         order_data (dict): Dane zamówienia
         order_items (list): Lista pozycji zamówienia
         output_dir (str, optional): Katalog wyjściowy dla plików JSON. Jeśli None, użyje wartości z config.ini
-        
+
     Returns:
         str: Znormalizowany numer zamówienia
     """
     if output_dir is None:
         output_dir = get_zo_json_dir()
-        
+
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-        
+
     order_number = order_data.get('NUMER', '')
     normalized_order_number = normalize_filename(order_number)
-    
+
     # Konwertuj wszystkie wartości Decimal na stringi
     output_data = {
         'order': convert_decimal_to_str(order_data),
         'items': convert_decimal_to_str(order_items)
     }
-    
+
     output_file = os.path.join(output_dir, f"{normalized_order_number}.json")
-    
+
     # Sprawdź czy plik JSON już istnieje i porównaj dane
     data_changed = False
     if os.path.exists(output_file):
         try:
             with open(output_file, 'r', encoding='utf-8') as f:
                 existing_data = json.load(f)
-                
+
             # Porównaj dane
             if existing_data != output_data:
                 data_changed = True
-                logger.info(f"Wykryto zmiany w danych zamówienia {order_number}")
-                
+                logger.info(
+                    f"Wykryto zmiany w danych zamówienia {order_number}")
+
         except Exception as e:
-            logger.error(f"Błąd podczas porównywania danych dla zamówienia {order_number}: {str(e)}")
+            logger.error(
+                f"Błąd podczas porównywania danych dla zamówienia {order_number}: {str(e)}")
             data_changed = True
     else:
         data_changed = True
-        logger.info(f"Tworzenie nowego pliku JSON dla zamówienia {order_number}")
-    
+        logger.info(
+            f"Tworzenie nowego pliku JSON dla zamówienia {order_number}")
+
     # Jeśli dane się zmieniły, zapisz nowy plik JSON
     if data_changed:
         try:
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(output_data, f, ensure_ascii=False, indent=2)
-            logger.info(f"Zapisano zaktualizowane dane zamówienia {order_number} do pliku JSON")
-
-
+            logger.info(
+                f"Zapisano zaktualizowane dane zamówienia {order_number} do pliku JSON")
 
             # Sprawdź czy istnieje plik HTML i usuń go jeśli dane się zmieniły
 
@@ -450,18 +469,18 @@ def save_order_to_json(order_data, order_items, output_dir=None):
             #     os.remove(html_file)
             #     logger.info(f"Usunięto stary plik HTML dla zamówienia {order_number} z powodu zmian w danych")
 
-
-
         except Exception as e:
-            logger.error(f"Błąd podczas zapisywania danych dla zamówienia {order_number}: {str(e)}")
+            logger.error(
+                f"Błąd podczas zapisywania danych dla zamówienia {order_number}: {str(e)}")
             return None
-    
+
     return normalized_order_number
+
 
 def convert_json_to_html(input_dir=None, output_dir=None):
     """
     Konwertuje pliki JSON z zamówieniami na pliki HTML.
-    
+
     Args:
         input_dir (str, optional): Katalog z plikami JSON. Jeśli None, użyje wartości z config.ini
         output_dir (str, optional): Katalog wyjściowy dla plików HTML. Jeśli None, użyje wartości z config.ini
@@ -470,43 +489,47 @@ def convert_json_to_html(input_dir=None, output_dir=None):
         input_dir = get_zo_json_dir()
     if output_dir is None:
         output_dir = get_zo_html_dir()
-        
+
     if not os.path.exists(input_dir):
         logger.error(f"Katalog {input_dir} nie istnieje")
         return
-        
+
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-        
+
     for filename in os.listdir(input_dir):
         if not filename.endswith('.json'):
             continue
-            
+
         input_file = os.path.join(input_dir, filename)
         normalized_order_number = os.path.splitext(filename)[0]
-        output_file = os.path.join(output_dir, f"{normalized_order_number}.html")
-        
+        output_file = os.path.join(
+            output_dir, f"{normalized_order_number}.html")
+
         try:
             with open(input_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                
+
             # Sprawdź czy plik HTML już istnieje
             if os.path.exists(output_file):
-                logger.info(f"Plik HTML dla zamówienia {normalized_order_number} już istnieje, pomijam generowanie")
+                logger.info(
+                    f"Plik HTML dla zamówienia {normalized_order_number} już istnieje, pomijam generowanie")
                 continue
-                
+
             html = generate_order_html(
                 order_data=data['order'],
                 items=data['items']
             )
-            
+
             with open(output_file, 'w', encoding='utf-8') as f:
                 f.write(html)
-                
-            logger.info(f"Wygenerowano HTML dla zamówienia {normalized_order_number}")
-            
+
+            logger.info(
+                f"Wygenerowano HTML dla zamówienia {normalized_order_number}")
+
         except Exception as e:
-            logger.error(f"Błąd podczas przetwarzania pliku {filename}: {str(e)}")
+            logger.error(
+                f"Błąd podczas przetwarzania pliku {filename}: {str(e)}")
 
 
 def process_todays_orders(db_manager, printed_orders):
@@ -522,12 +545,14 @@ def process_todays_orders(db_manager, printed_orders):
         today_orders = get_todays_orders(db_manager.connection)
         # print(today_orders)
         # return False
-        #KOD_KRESKOWY
+        # KOD_KRESKOWY
 
-        logger.info(f"Znaleziono {len(today_orders)} zamówień z dzisiejszego dnia")
+        logger.info(
+            f"Znaleziono {len(today_orders)} zamówień z dzisiejszego dnia")
 
         if not today_orders:
-            logger.info("Brak zamówień z dzisiejszego dnia, kończę przetwarzanie")
+            logger.info(
+                "Brak zamówień z dzisiejszego dnia, kończę przetwarzanie")
             return
 
         # Przetwórz każde zamówienie
@@ -539,12 +564,15 @@ def process_todays_orders(db_manager, printed_orders):
                     continue
 
                 normalized_order_number = normalize_filename(order_number)
-                logger.info(f"Przetwarzanie zamówienia {order_number} (znormalizowane: {normalized_order_number})")
+                logger.info(
+                    f"Przetwarzanie zamówienia {order_number} (znormalizowane: {normalized_order_number})")
 
                 # Pobierz pełne dane zamówienia z pozycjami
-                order_data = load_orders_from_sql(db_manager.connection, order_id=order_number)
+                order_data = load_orders_from_sql(
+                    db_manager.connection, order_id=order_number)
                 if not order_data or len(order_data) == 0:
-                    logger.warning(f"Nie znaleziono danych dla zamówienia {order_number} w bazie")
+                    logger.warning(
+                        f"Nie znaleziono danych dla zamówienia {order_number} w bazie")
                     continue
 
                 # Ponieważ load_orders_from_sql zwraca listę zamówień, pobieramy pierwsze
@@ -553,7 +581,8 @@ def process_todays_orders(db_manager, printed_orders):
 
                 # Sprawdź, czy zamówienie ma jakiekolwiek pozycje
                 if not items:
-                    logger.warning(f"Zamówienie {order_number} nie ma żadnych pozycji, tworzę puste zamówienie")
+                    logger.warning(
+                        f"Zamówienie {order_number} nie ma żadnych pozycji, tworzę puste zamówienie")
                     # Możemy tu zdecydować, czy kontynuować przetwarzanie pustego zamówienia
                     # W tym przypadku tworzymy puste zamówienie bez pozycji
                     save_order_to_json(order, [])
@@ -565,7 +594,8 @@ def process_todays_orders(db_manager, printed_orders):
                     continue
 
                 # Sprawdź czy dane w bazie różnią się od zapisanych w JSON
-                json_file = os.path.join(get_zo_json_dir(), f"{normalized_order_number}.json")
+                json_file = os.path.join(
+                    get_zo_json_dir(), f"{normalized_order_number}.json")
                 data_changed = False
 
                 if os.path.exists(json_file):
@@ -582,21 +612,28 @@ def process_todays_orders(db_manager, printed_orders):
                         # Porównaj dane
                         if existing_data != current_data:
                             data_changed = True
-                            logger.info(f"Wykryto zmiany w danych zamówienia {order_number} w bazie danych")
-                            logger.info(f"Porównanie danych dla zamówienia {order_number}:")
-                            logger.info(f"Liczba pozycji w bazie: {len(current_data['items'])}")
-                            logger.info(f"Liczba pozycji w JSON: {len(existing_data['items'])}")
+                            logger.info(
+                                f"Wykryto zmiany w danych zamówienia {order_number} w bazie danych")
+                            logger.info(
+                                f"Porównanie danych dla zamówienia {order_number}:")
+                            logger.info(
+                                f"Liczba pozycji w bazie: {len(current_data['items'])}")
+                            logger.info(
+                                f"Liczba pozycji w JSON: {len(existing_data['items'])}")
 
                     except Exception as e:
-                        logger.error(f"Błąd podczas porównywania danych dla zamówienia {order_number}: {str(e)}")
+                        logger.error(
+                            f"Błąd podczas porównywania danych dla zamówienia {order_number}: {str(e)}")
                         data_changed = True
                 else:
                     data_changed = True
-                    logger.info(f"Nie znaleziono pliku JSON dla zamówienia {order_number}, utworzę nowy")
+                    logger.info(
+                        f"Nie znaleziono pliku JSON dla zamówienia {order_number}, utworzę nowy")
 
                 # Jeśli dane się zmieniły lub nie ma pliku JSON
                 if data_changed:
-                    logger.info(f"Generowanie nowych plików dla zamówienia {order_number} z powodu zmian w danych")
+                    logger.info(
+                        f"Generowanie nowych plików dla zamówienia {order_number} z powodu zmian w danych")
                     # Zapisz nowe dane do JSON
                     save_order_to_json(order, items)
 
@@ -610,7 +647,8 @@ def process_todays_orders(db_manager, printed_orders):
                 else:
                     # Sprawdź czy zamówienie nie zostało już wydrukowane
                     if normalized_order_number in printed_orders:
-                        logger.info(f"Zamówienie {order_number} zostało już wydrukowane i nie zmieniło się, pomijam...")
+                        logger.info(
+                            f"Zamówienie {order_number} zostało już wydrukowane i nie zmieniło się, pomijam...")
                         continue
 
                     # Jeśli nie zostało wydrukowane, wygeneruj HTML
@@ -627,4 +665,5 @@ def process_todays_orders(db_manager, printed_orders):
                 continue
 
     except Exception as e:
-        logger.error(f"Błąd ogólny w process_todays_orders: {str(e)}", exc_info=True)
+        logger.error(
+            f"Błąd ogólny w process_todays_orders: {str(e)}", exc_info=True)

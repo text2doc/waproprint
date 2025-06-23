@@ -5,6 +5,7 @@ import logging
 from lib.check_printer_queue import check_printer_queue
 from lib.wait_for_print_job import wait_for_print_job
 
+
 def print_with_ghostscript(file_path, printer_name):
     """Drukuje dokument używając Ghostscript"""
     gs_paths = [
@@ -24,13 +25,15 @@ def print_with_ghostscript(file_path, printer_name):
                 # Użyj Ghostscript do drukowania
                 cmd = f'"{gs_path}" -dPrinted -dBATCH -dNOPAUSE -dSAFER -sDEVICE=mswinpr2 -sOutputFile="%printer%{printer_name}" "{abs_file_path}"'
                 subprocess.run(cmd, shell=True, check=True)
-                logging.info(f"Wysłano dokument {abs_file_path} do druku na {printer_name} (Ghostscript)")
+                logging.info(
+                    f"Wysłano dokument {abs_file_path} do druku na {printer_name} (Ghostscript)")
 
                 # Poczekaj chwilę, aby dokument trafił do kolejki
                 time.sleep(2)
 
                 # Sprawdź kolejkę po wysłaniu
-                logging.info("Sprawdzanie kolejki drukarki po wysłaniu (Ghostscript):")
+                logging.info(
+                    "Sprawdzanie kolejki drukarki po wysłaniu (Ghostscript):")
                 check_printer_queue(printer_name)
 
                 # Poczekaj na zakończenie drukowania
@@ -38,10 +41,12 @@ def print_with_ghostscript(file_path, printer_name):
                     logging.info("Drukowanie zakończone pomyślnie")
                     return True
                 else:
-                    logging.error("Drukowanie nie zostało zakończone pomyślnie")
+                    logging.error(
+                        "Drukowanie nie zostało zakończone pomyślnie")
                     return False
             except Exception as e:
-                logging.error(f"Błąd podczas drukowania przez Ghostscript: {str(e)}")
+                logging.error(
+                    f"Błąd podczas drukowania przez Ghostscript: {str(e)}")
             return True  # Ghostscript found but failed to print
 
     return False  # Ghostscript not found

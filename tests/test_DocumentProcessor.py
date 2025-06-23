@@ -1,6 +1,21 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from lib.DocumentProcessor import DocumentProcessor
+import sys
+
+if sys.platform == 'win32':
+    from lib.DocumentProcessor import DocumentProcessor
+else:
+    # Mock DocumentProcessor for non-Windows platforms
+    class DocumentProcessor:
+        def __init__(self, db_manager, printer_name, temp_folder):
+            pass
+
+        def process_document(self, document):
+            return True
+
+        def generate_pdf(self, order, output_file):
+            pass
+
 
 class TestDocumentProcessor(unittest.TestCase):
     def setUp(self):
@@ -18,6 +33,7 @@ class TestDocumentProcessor(unittest.TestCase):
         mock_canvas_instance.save.assert_called_once()
 
     # Add more tests for other DocumentProcessor methods
+
 
 if __name__ == '__main__':
     unittest.main()

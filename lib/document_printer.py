@@ -12,6 +12,7 @@ from lib.log_config import get_logger
 
 logger = get_logger().getLogger(__name__)
 
+
 def print_document(pdf_path, printer_name=None):
     """
     Drukuje dokument PDF na wskazanej drukarce.
@@ -67,10 +68,12 @@ def print_document(pdf_path, printer_name=None):
         stdout, stderr = process.communicate()
 
         if process.returncode != 0:
-            logger.error(f"Błąd podczas drukowania: {stderr.decode('utf-8', errors='ignore')}")
+            logger.error(
+                f"Błąd podczas drukowania: {stderr.decode('utf-8', errors='ignore')}")
             return False
 
-        logger.info(f"Dokument {pdf_path} został wysłany do drukarki {printer_name or 'domyślnej'}")
+        logger.info(
+            f"Dokument {pdf_path} został wysłany do drukarki {printer_name or 'domyślnej'}")
         return True
 
     except Exception as e:

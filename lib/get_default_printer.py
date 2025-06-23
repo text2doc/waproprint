@@ -1,6 +1,7 @@
 import win32print
 import logging
 
+
 def get_default_printer():
     """Pobiera nazwę domyślnej drukarki systemowej"""
     try:

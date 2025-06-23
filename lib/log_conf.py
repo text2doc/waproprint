@@ -18,7 +18,8 @@ class SingletonLogger:
     def initialize_logger(self):
         """Inicjalizuje logger"""
         # Tworzenie katalogów dla logów
-        log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
+        log_dir = os.path.join(os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))), 'logs')
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
 
@@ -31,7 +32,8 @@ class SingletonLogger:
             return
 
         # Konfiguracja formatera
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
         # Handler pliku
         file_handler = RotatingFileHandler(

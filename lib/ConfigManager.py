@@ -22,9 +22,10 @@ class ConfigManager:
             # 1. Check current working directory
             cwd_config = os.path.join(os.getcwd(), 'config.ini')
             # 2. Check script directory (where this file is located)
-            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            script_dir = os.path.dirname(
+                os.path.dirname(os.path.abspath(__file__)))
             script_config = os.path.join(script_dir, 'config.ini')
-            
+
             if os.path.exists(cwd_config):
                 self.config_file = cwd_config
             elif os.path.exists(script_config):
@@ -32,17 +33,19 @@ class ConfigManager:
             else:
                 # Default to current working directory
                 self.config_file = 'config.ini'
-                logger.warning(f"Using default config file path: {self.config_file}")
+                logger.warning(
+                    f"Using default config file path: {self.config_file}")
         else:
             self.config_file = config_file
-            
+
         self.config = configparser.ConfigParser()
         try:
             self.load_config()
         except FileNotFoundError as e:
             logger.error(f"Failed to load configuration: {e}")
             logger.info(f"Current working directory: {os.getcwd()}")
-            logger.info(f"Script directory: {os.path.dirname(os.path.abspath(__file__))}")
+            logger.info(
+                f"Script directory: {os.path.dirname(os.path.abspath(__file__))}")
             raise
 
     def load_config(self):
@@ -50,28 +53,33 @@ class ConfigManager:
         # Try to find the config file in multiple locations
         if not os.path.exists(self.config_file):
             # Try to find config.ini in the same directory as this script
-            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            script_dir = os.path.dirname(
+                os.path.dirname(os.path.abspath(__file__)))
             script_config = os.path.join(script_dir, 'config.ini')
-            
+
             if os.path.exists(script_config):
                 self.config_file = script_config
-                logger.info(f"Using config file from script directory: {self.config_file}")
+                logger.info(
+                    f"Using config file from script directory: {self.config_file}")
             else:
                 error_msg = f"Config file not found at any of these locations:\n"
                 error_msg += f"1. {os.path.abspath(self.config_file)}\n"
                 error_msg += f"2. {script_config}"
                 logger.error(error_msg)
-                raise FileNotFoundError(f"Plik konfiguracyjny nie został znaleziony w żadnej z lokalizacji: {error_msg}")
+                raise FileNotFoundError(
+                    f"Plik konfiguracyjny nie został znaleziony w żadnej z lokalizacji: {error_msg}")
 
         # Read the config file with explicit UTF-8 encoding
         self.config.read(self.config_file, encoding='utf-8')
-        logger.info(f"Wczytano konfigurację z pliku: {os.path.abspath(self.config_file)}")
-        
+        logger.info(
+            f"Wczytano konfigurację z pliku: {os.path.abspath(self.config_file)}")
+
         # Verify required sections exist
         required_sections = ['DATABASE', 'PRINTING']
         for section in required_sections:
             if section not in self.config:
-                logger.warning(f"Brak wymaganej sekcji w pliku konfiguracyjnym: {section}")
+                logger.warning(
+                    f"Brak wymaganej sekcji w pliku konfiguracyjnym: {section}")
 
     def get_connection_string(self):
         """Zwraca ciąg połączenia do bazy danych"""
@@ -80,7 +88,8 @@ class ConfigManager:
             database = self.config['DATABASE']['database']
             username = self.config['DATABASE']['username']
             password = self.config['DATABASE']['password']
-            trusted_connection = self.config['DATABASE'].getboolean('trusted_connection', fallback=False)
+            trusted_connection = self.config['DATABASE'].getboolean(
+                'trusted_connection', fallback=False)
             timeout = self.config['DATABASE'].get('timeout', fallback='30')
             encrypt = self.config['DATABASE'].get('encrypt', fallback='no')
             driver = self.config['DATABASE'].get('driver', fallback='FreeTDS')
@@ -98,7 +107,8 @@ class ConfigManager:
             return connection_string
 
         except KeyError as e:
-            logger.error(f"Brak wymaganego klucza w konfiguracji bazy danych: {e}")
+            logger.error(
+                f"Brak wymaganego klucza w konfiguracji bazy danych: {e}")
             raise
 
     def get_printer_name(self):
@@ -146,7 +156,8 @@ class ConfigManager:
         try:
             return self.config['PRINTING'].getint('check_interval', fallback=5)
         except ValueError:
-            logger.warning("Nieprawidłowa wartość interwału sprawdzania. Używam domyślnej wartości 5 sekund.")
+            logger.warning(
+                "Nieprawidłowa wartość interwału sprawdzania. Używam domyślnej wartości 5 sekund.")
             return 5
 
     def get_allowed_users(self):
@@ -155,7 +166,8 @@ class ConfigManager:
             users = self.config['USERS']['allowed_users']
             return [user.strip() for user in users.split(',') if user.strip()]
         except KeyError:
-            logger.warning("Brak listy dozwolonych użytkowników w konfiguracji")
+            logger.warning(
+                "Brak listy dozwolonych użytkowników w konfiguracji")
             return None
 
     def create_temp_folder(self):
@@ -175,7 +187,8 @@ class ConfigManager:
         try:
             return self.config.get('FILES', 'zo_zpl_dir', fallback='ZO_ZPL')
         except Exception as e:
-            logger.error(f"Błąd podczas pobierania ścieżki katalogu ZPL: {str(e)}")
+            logger.error(
+                f"Błąd podczas pobierania ścieżki katalogu ZPL: {str(e)}")
             return None
 
     def get_printer_dpi(self):
@@ -192,7 +205,8 @@ class ConfigManager:
             else:
                 return self.config.getint('PRINTING', 'dpi', fallback=300)
         except Exception as e:
-            logger.error(f"Błąd podczas pobierania rozdzielczości drukarki: {str(e)}")
+            logger.error(
+                f"Błąd podczas pobierania rozdzielczości drukarki: {str(e)}")
             return 203  # Domyślna rozdzielczość dla drukarek Zebra
 
     def get_printer_label_margin(self):
@@ -205,7 +219,8 @@ class ConfigManager:
         try:
             return self.config.getfloat('PRINTING', 'label_margin', fallback=5)
         except Exception as e:
-            logger.error(f"Błąd podczas pobierania marginesu etykiety: {str(e)}")
+            logger.error(
+                f"Błąd podczas pobierania marginesu etykiety: {str(e)}")
             return 5
 
     def get_printer_label_width(self):
@@ -222,7 +237,8 @@ class ConfigManager:
             else:
                 return self.config.getfloat('PRINTING', 'label_width', fallback=4.0)
         except Exception as e:
-            logger.error(f"Błąd podczas pobierania szerokości etykiety: {str(e)}")
+            logger.error(
+                f"Błąd podczas pobierania szerokości etykiety: {str(e)}")
             return 4.0
 
     def get_printer_label_width_mm(self):
@@ -239,8 +255,10 @@ class ConfigManager:
             else:
                 return self.config.getfloat('PRINTING', 'label_width_mm', fallback=104)
         except Exception as e:
-            logger.error(f"Błąd podczas pobierania szerokości etykiety w mm: {str(e)}")
-            return 104  # Domyślna szerokość dla drukarek termicznych 4 cale (104mm)
+            logger.error(
+                f"Błąd podczas pobierania szerokości etykiety w mm: {str(e)}")
+            # Domyślna szerokość dla drukarek termicznych 4 cale (104mm)
+            return 104
 
     def get_printer_label_height(self):
         """
@@ -256,7 +274,8 @@ class ConfigManager:
             else:
                 return self.config.getfloat('PRINTING', 'label_height', fallback=6.0)
         except Exception as e:
-            logger.error(f"Błąd podczas pobierania wysokości etykiety: {str(e)}")
+            logger.error(
+                f"Błąd podczas pobierania wysokości etykiety: {str(e)}")
             return 6.0
 
     def get_printer_font_size(self):
@@ -273,7 +292,8 @@ class ConfigManager:
             else:
                 return self.config.getint('PRINTING', 'font_size', fallback=0)
         except Exception as e:
-            logger.error(f"Błąd podczas pobierania rozmiaru czcionki: {str(e)}")
+            logger.error(
+                f"Błąd podczas pobierania rozmiaru czcionki: {str(e)}")
             return 12
 
     def get_printer_encoding(self):

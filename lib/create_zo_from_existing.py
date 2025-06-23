@@ -2,6 +2,7 @@
 Skrypt do tworzenia dokumentu ZO na podstawie istniejącego dokumentu.
 """
 
+from lib.ConfigManager import ConfigManager
 import pyodbc
 from lib.get_next_zo_number import get_next_zo_number
 
@@ -15,8 +16,6 @@ from datetime import datetime
 from lib.log_config import get_logger
 
 logger = get_logger().getLogger(__name__)
-from lib.ConfigManager import ConfigManager
-from lib.log_config import get_logger
 
 logger = get_logger().getLogger(__name__)
 
@@ -52,7 +51,8 @@ def create_zo_from_existing():
 
         columns = cursor.fetchall()
         for col in columns:
-            logger.info(f"Kolumna: {col.column_name}, Typ: {col.data_type}, Nullable: {col.is_nullable}")
+            logger.info(
+                f"Kolumna: {col.column_name}, Typ: {col.data_type}, Nullable: {col.is_nullable}")
 
         # Pobierz ostatni dokument PZ lub WZ
         query = """
@@ -72,7 +72,8 @@ def create_zo_from_existing():
         logger.info(f"Znaleziono dokument źródłowy: {source_doc.NUMER}")
 
         # Sprawdzenie struktury tabeli DOKUMENT_MAGAZYNOWY
-        logger.info("\nSprawdzam szczegółową strukturę tabeli DOKUMENT_MAGAZYNOWY...")
+        logger.info(
+            "\nSprawdzam szczegółową strukturę tabeli DOKUMENT_MAGAZYNOWY...")
         cursor.execute("""
         SELECT 
             c.name as column_name,
@@ -103,7 +104,8 @@ def create_zo_from_existing():
             logger.info("---")
 
         # Sprawdzenie struktury tabeli POZYCJA_DOKUMENTU_MAGAZYNOWEGO
-        logger.info("\nSprawdzam szczegółową strukturę tabeli POZYCJA_DOKUMENTU_MAGAZYNOWEGO...")
+        logger.info(
+            "\nSprawdzam szczegółową strukturę tabeli POZYCJA_DOKUMENTU_MAGAZYNOWEGO...")
         cursor.execute("""
         SELECT 
             c.name as column_name,

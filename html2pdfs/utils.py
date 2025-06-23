@@ -74,7 +74,8 @@ def generate_temp_filename(prefix="output", suffix=".pdf", directory=None):
     os.makedirs(directory, exist_ok=True)
 
     # Generuj losową nazwę pliku
-    random_part = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+    random_part = ''.join(random.choices(
+        string.ascii_lowercase + string.digits, k=10))
     timestamp = int(time.time())
     filename = f"{prefix}_{timestamp}_{random_part}{suffix}"
 

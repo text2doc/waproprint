@@ -7,6 +7,22 @@ Moduł integrujący ulepszoną obsługę drukarek termicznych z istniejącym sys
 Zintegrowany z funkcjonalnością drukowania plików ZPL na drukarkach sieciowych.
 """
 
+import pikepdf
+import decimal
+from decimal import Decimal
+from zpl.zpl_file import *
+from html2pdfs.pdf_trimmer import (
+    trim_pdf_to_content,
+    detect_content_height_from_pdf,
+    trim_existing_pdf
+)
+from html2pdfs.html_processor import preprocess_html, calculate_optimal_height
+from html2pdfs.utils import (
+    find_wkhtmltopdf_path,
+    generate_temp_filename,
+    ensure_directory_exists,
+    pdf_to_final_location
+)
 from zpl2print import *
 from html2pdf3 import *
 import asyncio
@@ -19,7 +35,7 @@ from thermal_printer import *
 from lib.DatabaseManager import DatabaseManager
 from lib.ConfigManager import ConfigManager
 # from lib.order_processor import  process_todays_orders
-from lib.order_processor2 import  process_todays_orders, get_id_uzytkownika_by_order
+from lib.order_processor2 import process_todays_orders, get_id_uzytkownika_by_order
 from lib.file_utils import get_printed_orders, save_order_html, normalize_filename, get_path_order
 from lib.file_utils import get_zo_html_dir, get_zo_json_dir, get_zo_zpl_dir, get_zo_pdf_dir
 from lib.logger import logger
@@ -51,7 +67,8 @@ def save_order_zpl(order_number, html_path):
         config = ConfigManager()
         zpl_dir = config.get_zo_zpl_dir()
         if not zpl_dir:
-            logger.error("Nie udało się pobrać ścieżki katalogu ZPL z konfiguracji")
+            logger.error(
+                "Nie udało się pobrać ścieżki katalogu ZPL z konfiguracji")
             return False
 
         # Utwórz folder ZPL jeśli nie istnieje
@@ -71,7 +88,8 @@ def save_order_zpl(order_number, html_path):
         encoding = config.get_printer_encoding()
 
         if not printer_name:
-            logger.error("Nie udało się pobrać nazwy drukarki termicznej z konfiguracji")
+            logger.error(
+                "Nie udało się pobrać nazwy drukarki termicznej z konfiguracji")
             return False
 
         # Konwertuj HTML na ZPL i zapisz do pliku
@@ -88,16 +106,18 @@ def save_order_zpl(order_number, html_path):
         )
 
         if result:
-            logger.info(f"Zapisano plik ZPL dla zamówienia {order_number} w {zpl_path}")
+            logger.info(
+                f"Zapisano plik ZPL dla zamówienia {order_number} w {zpl_path}")
             return True
         else:
-            logger.error(f"Nie udało się wygenerować pliku ZPL dla zamówienia {order_number}")
+            logger.error(
+                f"Nie udało się wygenerować pliku ZPL dla zamówienia {order_number}")
             return False
 
     except Exception as e:
-        logger.error(f"Błąd podczas zapisywania pliku ZPL dla zamówienia {order_number}: {str(e)}", exc_info=True)
+        logger.error(
+            f"Błąd podczas zapisywania pliku ZPL dla zamówienia {order_number}: {str(e)}", exc_info=True)
         return False
-
 
 
 def initialize_thermal_printer_manager(config: ConfigManager) -> ThermalPrinterManager:
@@ -115,7 +135,8 @@ def initialize_thermal_printer_manager(config: ConfigManager) -> ThermalPrinterM
         printer_config_file = 'thermal_printers.json'
 
         # Inicjalizacja menedżera drukarek
-        printer_manager = ThermalPrinterManager(config_file=printer_config_file)
+        printer_manager = ThermalPrinterManager(
+            config_file=printer_config_file)
 
         # Wykryj dostępne drukarki termiczne
         thermal_printers = printer_manager.get_thermal_printers()
@@ -128,12 +149,14 @@ def initialize_thermal_printer_manager(config: ConfigManager) -> ThermalPrinterM
         if configured_printer and configured_printer in thermal_printers:
             # Ustaw jako domyślną
             printer_manager.set_default_thermal_printer(configured_printer)
-            logger.info(f"Używam drukarki z konfiguracji: {configured_printer}")
+            logger.info(
+                f"Używam drukarki z konfiguracji: {configured_printer}")
         else:
             # Jeśli drukarki z konfiguracji nie znaleziono, użyj pierwszej dostępnej
             default_printer = printer_manager.get_default_thermal_printer()
             if default_printer:
-                logger.info(f"Drukarka z konfiguracji nie jest dostępna. Używam drukarki: {default_printer}")
+                logger.info(
+                    f"Drukarka z konfiguracji nie jest dostępna. Używam drukarki: {default_printer}")
             else:
                 logger.warning("Nie znaleziono żadnej drukarki termicznej!")
 
@@ -142,7 +165,8 @@ def initialize_thermal_printer_manager(config: ConfigManager) -> ThermalPrinterM
 
         return printer_manager
     except Exception as e:
-        logger.error(f"Błąd podczas inicjalizacji menedżera drukarek: {str(e)}")
+        logger.error(
+            f"Błąd podczas inicjalizacji menedżera drukarek: {str(e)}")
         return None
 
 
@@ -183,33 +207,21 @@ def print_zpl_network(zpl_path, config=None):
             }
 
         # Drukowanie ZPL na drukarce sieciowej
-        logger.info(f"Drukuję plik ZPL {zpl_path} na drukarce sieciowej {printer_ip}:{port}")
-        result = print_zpl_to_network_printer(zpl_path, printer_ip, port, config)
+        logger.info(
+            f"Drukuję plik ZPL {zpl_path} na drukarce sieciowej {printer_ip}:{port}")
+        result = print_zpl_to_network_printer(
+            zpl_path, printer_ip, port, config)
 
         return result
 
     except Exception as e:
-        logger.exception(f"Wystąpił błąd podczas drukowania ZPL na drukarce sieciowej: {str(e)}")
+        logger.exception(
+            f"Wystąpił błąd podczas drukowania ZPL na drukarce sieciowej: {str(e)}")
         return {
             'success': False,
             'message': f"Wystąpił błąd podczas drukowania ZPL: {str(e)}",
             'status': 'error'
         }
-
-
-
-from html2pdfs.utils import (
-    find_wkhtmltopdf_path,
-    generate_temp_filename,
-    ensure_directory_exists,
-    pdf_to_final_location
-)
-from html2pdfs.html_processor import preprocess_html, calculate_optimal_height
-from html2pdfs.pdf_trimmer import (
-    trim_pdf_to_content,
-    detect_content_height_from_pdf,
-    trim_existing_pdf
-)
 
 
 # Utwórz zmodyfikowaną asynchroniczną funkcję pomocniczą
@@ -230,7 +242,8 @@ async def generate_pdf(html_path, pdf_path, label_width_mm, continuous=True, mar
     """
     try:
         # Najpierw generuj PDF używając html_to_pdf
-        logger.info(f"Generowanie wstępnego PDF za pomocą html_to_pdf dla pliku {html_path}")
+        logger.info(
+            f"Generowanie wstępnego PDF za pomocą html_to_pdf dla pliku {html_path}")
 
         initial_pdf = await html_to_pdf(
             url=html_path,
@@ -242,7 +255,8 @@ async def generate_pdf(html_path, pdf_path, label_width_mm, continuous=True, mar
         )
 
         if not initial_pdf:
-            logger.error(f"Nie udało się wygenerować wstępnego PDF dla pliku {html_path}")
+            logger.error(
+                f"Nie udało się wygenerować wstępnego PDF dla pliku {html_path}")
             return None
 
         logger.info(f"Wstępny PDF został wygenerowany: {initial_pdf}")
@@ -258,7 +272,8 @@ async def generate_pdf(html_path, pdf_path, label_width_mm, continuous=True, mar
                 logger.info(f"PDF został pomyślnie przycięty: {trimmed_pdf}")
                 return trimmed_pdf
             else:
-                logger.warning(f"Nie udało się przyciąć PDF, zwracam oryginalny plik: {initial_pdf}")
+                logger.warning(
+                    f"Nie udało się przyciąć PDF, zwracam oryginalny plik: {initial_pdf}")
                 return initial_pdf
 
         except Exception as e:
@@ -272,16 +287,6 @@ async def generate_pdf(html_path, pdf_path, label_width_mm, continuous=True, mar
     except Exception as e:
         logger.error(f"Błąd podczas generowania PDF: {str(e)}")
         return None
-
-
-from zpl.zpl_file import *
-
-from zebrafy import ZebrafyPDF
-from decimal import Decimal
-
-import decimal
-import pikepdf
-from zebrafy import ZebrafyPDF
 
 
 def convert_to_float(value):
@@ -325,8 +330,10 @@ def convert_pdf_to_zpl_with_original_dimensions(pdf_path, dpi=203, split_pages=F
     # Pobierz rozmiary pierwszej strony
     # Uwaga: pikepdf używa punktów (1/72 cala), więc konwertujemy do milimetrów
     first_page = pdf.pages[0]
-    width_pts = convert_to_float(first_page.mediabox[2] - first_page.mediabox[0])
-    height_pts = convert_to_float(first_page.mediabox[3] - first_page.mediabox[1])
+    width_pts = convert_to_float(
+        first_page.mediabox[2] - first_page.mediabox[0])
+    height_pts = convert_to_float(
+        first_page.mediabox[3] - first_page.mediabox[1])
 
     # Bezpieczna konwersja punktów do milimetrów (1 punkt = 0.352778 mm)
     width_mm = int(width_pts * 2.54)
@@ -360,7 +367,7 @@ def convert_pdf_to_zpl_with_original_dimensions(pdf_path, dpi=203, split_pages=F
     if "^LL" not in zpl_string:
         # Konwersja wysokości z mm na dots (punkty) dla ZPL
         # ZPL używa jednostek w dots, a nie mm. Przy 203 DPI, 1 mm = 8 dots
-        #height_dots = int(height_mm * (dpi / 25.4))  # 25.4mm = 1 cal
+        # height_dots = int(height_mm * (dpi / 25.4))  # 25.4mm = 1 cal
         height_dots = int(height_mm)
         # print(height_dots)
         # Dodaj komendę LL do ZPL - wstawia po komendzie ^LH (Label Home)
@@ -369,16 +376,20 @@ def convert_pdf_to_zpl_with_original_dimensions(pdf_path, dpi=203, split_pages=F
             lh_parts = zpl_parts[1].split(",", 1)
             if len(lh_parts) > 1:
                 # Wstaw po ^LH0,0
-                insert_point = len(zpl_parts[0]) + len("^LH") + len(lh_parts[0]) + 1
-                zpl_string = zpl_string[:insert_point] + f"^LL{height_dots}" + zpl_string[insert_point:]
+                insert_point = len(zpl_parts[0]) + \
+                    len("^LH") + len(lh_parts[0]) + 1
+                zpl_string = zpl_string[:insert_point] + \
+                    f"^LL{height_dots}" + zpl_string[insert_point:]
             else:
                 # Wstaw po ^LH
                 insert_point = len(zpl_parts[0]) + len("^LH")
-                zpl_string = zpl_string[:insert_point] + f"^LL{height_dots}" + zpl_string[insert_point:]
+                zpl_string = zpl_string[:insert_point] + \
+                    f"^LL{height_dots}" + zpl_string[insert_point:]
         # Jeśli nie ma ^LH, dodaj po ^XA
         elif "^XA" in zpl_string:
             insert_point = zpl_string.find("^XA") + len("^XA")
-            zpl_string = zpl_string[:insert_point] + f"^LL{height_dots}" + zpl_string[insert_point:]
+            zpl_string = zpl_string[:insert_point] + \
+                f"^LL{height_dots}" + zpl_string[insert_point:]
 
     return zpl_string
 
@@ -394,7 +405,8 @@ def safe_convert_pdf_to_zpl(pdf_path, logger=None, **kwargs):
     """
     try:
         # Próba konwersji PDF do ZPL
-        zpl_string = convert_pdf_to_zpl_with_original_dimensions(pdf_path, **kwargs)
+        zpl_string = convert_pdf_to_zpl_with_original_dimensions(
+            pdf_path, **kwargs)
 
         return {
             'success': True,
@@ -489,6 +501,7 @@ def process_pdf_to_zpl(pdf_path, zo_zpl, logger=None, **kwargs):
             'error': conversion_result['error']
         }
 
+
 # Inicjalizacja konfiguracji
 config = ConfigManager()
 config.load_config()
@@ -501,6 +514,7 @@ printer_ip = config.get_thermal_printer_ip()
 printer_port = config.get_thermal_printer_port()
 printer_name = config.get_thermal_printer_name()
 
+
 def main():
     """
     Główna funkcja skryptu. Uruchamia proces generowania i drukowania zamówień.
@@ -510,12 +524,13 @@ def main():
 
     try:
 
-
         # Sprawdź, czy zdefiniowano adres IP drukarki
         if not printer_ip:
-            logger.warning("Brak adresu IP drukarki w konfiguracji. Drukowanie sieciowe nie będzie działać.")
+            logger.warning(
+                "Brak adresu IP drukarki w konfiguracji. Drukowanie sieciowe nie będzie działać.")
         else:
-            logger.info(f"Wykryto drukarkę sieciową: {printer_ip}:{printer_port}")
+            logger.info(
+                f"Wykryto drukarkę sieciową: {printer_ip}:{printer_port}")
 
         # Inicjalizacja menedżera drukarek termicznych (dla lokalnych drukarek)
         printer_manager = initialize_thermal_printer_manager(config)
@@ -524,7 +539,8 @@ def main():
         if printer_manager is None and not printer_ip:
             logger.error(
                 "Nie można zainicjalizować menedżera drukarek lokalnych i brak konfiguracji drukarki sieciowej.")
-            logger.error("Zatrzymuję skrypt, ponieważ drukowanie nie będzie możliwe.")
+            logger.error(
+                "Zatrzymuję skrypt, ponieważ drukowanie nie będzie możliwe.")
             return
 
         # Generowanie connection string
@@ -536,36 +552,34 @@ def main():
         db_manager.connect()
         logger.info("Połączono z bazą danych")
 
-
-
         # Pobierz listę już wydrukowanych zamówień
         printed_orders = get_printed_orders()
         logger.info(f"Znaleziono {len(printed_orders)} wydrukowanych zamówień")
-
-
-
 
         # Pobierz nazwę drukarki termicznej z config.ini (dla lokalnych drukarek)
         printer_name = None
         if printer_manager:
             printer_name = config.get_thermal_printer_name()
             if not printer_name:
-                logger.warning("Brak dostępnej drukarki lokalnej w konfiguracji.")
+                logger.warning(
+                    "Brak dostępnej drukarki lokalnej w konfiguracji.")
                 printer_name = printer_manager.get_default_thermal_printer()
                 if printer_name:
                     logger.info(f"Używam domyślnej drukarki: {printer_name}")
 
         if not printer_name and not printer_ip:
-            logger.error("Brak dostępnej drukarki (lokalnej lub sieciowej). Zatrzymuję skrypt.")
+            logger.error(
+                "Brak dostępnej drukarki (lokalnej lub sieciowej). Zatrzymuję skrypt.")
             return
 
         # Przetwórz dzisiejsze zamówienia
-        #for order_number, html_content in process_todays_orders(db_manager, printed_orders):
+        # for order_number, html_content in process_todays_orders(db_manager, printed_orders):
         for order_number, html_content in process_todays_orders():
             try:
                 # Zapisz plik HTML
                 zo_html = save_order_html(order_number, html_content)
-                logger.info(f"Zapisano plik HTML dla zamówienia {order_number}")
+                logger.info(
+                    f"Zapisano plik HTML dla zamówienia {order_number}")
 
                 # Pobierz parametry drukarki z konfiguracji
                 dpi = config.get_printer_dpi()
@@ -589,14 +603,17 @@ def main():
                         margins={"top": 0, "right": 0, "bottom": 0, "left": 0}
                     ))
                 except KeyboardInterrupt:
-                    logger.warning("Przerwano generowanie PDF. Kontynuowanie przetwarzania zamówień...")
+                    logger.warning(
+                        "Przerwano generowanie PDF. Kontynuowanie przetwarzania zamówień...")
                     continue
 
                 if pdf_path:
-                    logger.info(f"PDF dla zamówienia {order_number} został wygenerowany: {pdf_path}")
+                    logger.info(
+                        f"PDF dla zamówienia {order_number} został wygenerowany: {pdf_path}")
 
                     # Określ ścieżkę pliku ZPL
-                    zo_zpl = get_path_order(order_number, get_zo_zpl_dir(), '.zpl')
+                    zo_zpl = get_path_order(
+                        order_number, get_zo_zpl_dir(), '.zpl')
                     os.makedirs(os.path.dirname(zo_zpl), exist_ok=True)
 
                     # Generowanie ZPL z PDF
@@ -631,20 +648,25 @@ def main():
                         )
 
                         if not result['success']:
-                            logger.error(f"Nie udało się utworzyć pliku ZPL dla zamówienia {order_number}")
+                            logger.error(
+                                f"Nie udało się utworzyć pliku ZPL dla zamówienia {order_number}")
                             continue
 
                     except Exception as e:
-                        logger.error(f"Błąd podczas generowania lub zapisywania ZPL: {str(e)}")
+                        logger.error(
+                            f"Błąd podczas generowania lub zapisywania ZPL: {str(e)}")
                     # Sprawdź, czy plik ZPL został utworzony
                     if not os.path.exists(zo_zpl):
-                        logger.error(f"Nie udało się utworzyć pliku ZPL dla zamówienia {order_number}")
+                        logger.error(
+                            f"Nie udało się utworzyć pliku ZPL dla zamówienia {order_number}")
                         continue
 
-                    id_uzytkownika = str(get_id_uzytkownika_by_order(order_number))
+                    id_uzytkownika = str(
+                        get_id_uzytkownika_by_order(order_number))
                     allowed_users = config.get_allowed_users()
                     # Convert all allowed users to strings for consistent comparison
-                    allowed_users_str = [str(user_id) for user_id in allowed_users]
+                    allowed_users_str = [str(user_id)
+                                         for user_id in allowed_users]
 
                     if id_uzytkownika not in allowed_users_str:
                         logger.error(
@@ -654,45 +676,52 @@ def main():
                         logger.info(
                             f"Zamówienie {order_number}, id_uzytkownika: ({id_uzytkownika}) - użytkownik z uprawnieniami do drukowania")
 
-
                     # Drukowanie pliku ZPL na drukarce sieciowej lub lokalnej                    result = None
                     if printer_ip:
                         # Użyj drukowania sieciowego
                         result = print_zpl_network(zo_zpl, config)
                     elif printer_manager and printer_name:
                         # Użyj standardowego drukowania lokalnego (poprzez ThermalPrinterManager)
-                        result = printer_manager.print_zpl_file(zo_zpl, printer_name)
+                        result = printer_manager.print_zpl_file(
+                            zo_zpl, printer_name)
                     else:
-                        logger.error("Brak skonfigurowanej drukarki (sieciowej lub lokalnej)")
+                        logger.error(
+                            "Brak skonfigurowanej drukarki (sieciowej lub lokalnej)")
                         continue
 
                     # Obsługa wyniku drukowania
                     if result is not None and result.get('success', False):
-                        logger.info(f"Zamówienie {order_number} zostało pomyślnie wydrukowane.")
-
+                        logger.info(
+                            f"Zamówienie {order_number} zostało pomyślnie wydrukowane.")
 
                         # Zapisz kopię wydrukowanego pliku
-                        zo_printed = get_path_order(order_number, get_printer_folder(config), '.zpl')
+                        zo_printed = get_path_order(
+                            order_number, get_printer_folder(config), '.zpl')
                         try:
                             import shutil
                             shutil.copy2(zo_zpl, zo_printed)
-                            logger.debug(f"Zapisano ZPL to printer folder: {zo_printed}")
+                            logger.debug(
+                                f"Zapisano ZPL to printer folder: {zo_printed}")
                         except:
                             pass
                         # with open(zo_printed, "w") as zpl_printed:
                         #     zpl_printed.write(zpl_string)
 
-                        logger.info(f"Plik {zo_zpl} został wydrukowany i zapisano kopię w {zo_printed}")
+                        logger.info(
+                            f"Plik {zo_zpl} został wydrukowany i zapisano kopię w {zo_printed}")
                     else:
                         error_msg = "Nieznany błąd"
                         if result is not None and 'message' in result:
                             error_msg = result['message']
-                        logger.error(f"Nie udało się wydrukować zamówienia {order_number}: {error_msg}")
+                        logger.error(
+                            f"Nie udało się wydrukować zamówienia {order_number}: {error_msg}")
                 else:
-                    logger.error(f"Nie udało się wygenerować PDF dla zamówienia {order_number}")
+                    logger.error(
+                        f"Nie udało się wygenerować PDF dla zamówienia {order_number}")
 
             except Exception as e:
-                logger.exception(f"Błąd podczas przetwarzania zamówienia {order_number}: {str(e)}")
+                logger.exception(
+                    f"Błąd podczas przetwarzania zamówienia {order_number}: {str(e)}")
 
     except Exception as e:
         logger.error(f"Wystąpił błąd: {str(e)}", exc_info=True)
@@ -712,6 +741,7 @@ def get_printer_folder(config):
     os.makedirs(zo_prt, exist_ok=True)
 
     return zo_prt
+
 
 if __name__ == "__main__":
     try:

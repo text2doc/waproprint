@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 from zpl.zpl_parse_html import parse_html
 from zpl.zpl_calculate_dimensions import calculate_element_dimensions
 from zpl.zpl_render_text import render_text_block
-#from zpl.zpl_render_table import render_table
+# from zpl.zpl_render_table import render_table
 from zpl.zpl_encoding import get_encoding_command
 from zpl.zpl_text_utils import clean_text
 
@@ -45,7 +45,8 @@ def render_table(table, start_x, start_y, max_width, font_types, render_text_blo
             rows.extend(section.find_all('tr', recursive=False))
 
     # Ustal liczbę kolumn na podstawie wiersza z największą liczbą komórek
-    max_columns = max([len(row.find_all(['td', 'th'], recursive=False)) for row in rows]) if rows else 0
+    max_columns = max([len(row.find_all(['td', 'th'], recursive=False))
+                      for row in rows]) if rows else 0
 
     # Definiowanie szerokości kolumn (proporcja całkowitej szerokości)
     # Pierwsza kolumna (Lp.) będzie miała tylko 8% szerokości tabeli
@@ -64,11 +65,13 @@ def render_table(table, start_x, start_y, max_width, font_types, render_text_blo
         remaining_columns = max_columns - 1
         if remaining_columns > 0:
             percent_per_column = remaining_percent / remaining_columns
-            column_widths_percent.extend([percent_per_column] * remaining_columns)
+            column_widths_percent.extend(
+                [percent_per_column] * remaining_columns)
 
     # Przelicz procenty na rzeczywiste szerokości w punktach
     available_width = max_width - 2 * start_x
-    column_widths = [int(available_width * percent / 100) for percent in column_widths_percent]
+    column_widths = [int(available_width * percent / 100)
+                     for percent in column_widths_percent]
 
     # Jeśli mamy mniej zdefiniowanych szerokości niż kolumn, dodaj brakujące
     while len(column_widths) < max_columns:
@@ -81,13 +84,15 @@ def render_table(table, start_x, start_y, max_width, font_types, render_text_blo
         max_cell_height = 0  # Wysokość najwyższej komórki w wierszu
 
         # Dodaj linię oddzielającą wiersze
-        zpl.append(f"^FO{start_x},{current_y}^GB{max_width - 2 * start_x},1,1^FS")
+        zpl.append(
+            f"^FO{start_x},{current_y}^GB{max_width - 2 * start_x},1,1^FS")
         current_y += 10  # Odstęp po linii
 
         # Oblicz pozycje początkowe dla każdej kolumny
         column_positions = [start_x]
         for i in range(1, max_columns):
-            column_positions.append(column_positions[i - 1] + column_widths[i - 1])
+            column_positions.append(
+                column_positions[i - 1] + column_widths[i - 1])
 
         # Przetwórz każdą komórkę w wierszu
         for col_index, cell in enumerate(cells):
@@ -153,6 +158,7 @@ def render_table(table, start_x, start_y, max_width, font_types, render_text_blo
     current_y += 15  # Odstęp po tabeli
 
     return "\n".join(zpl), current_y
+
 
 class HtmlToZpl:
     def __init__(self,
@@ -298,10 +304,12 @@ class HtmlToZpl:
         # Kod kreskowy CODE128
         zpl = []
         zpl.append(f"^FO{x},{y}")  # Pozycja początkowa
-        zpl.append("^BCN,100,Y,N,N")  # Kod kreskowy CODE128, wysokość 100, czytelny, bez rotacji
+        # Kod kreskowy CODE128, wysokość 100, czytelny, bez rotacji
+        zpl.append("^BCN,100,Y,N,N")
         zpl.append(f"^FD{barcode_data}")  # Dane do zakodowania
         zpl.append("^FS")  # Koniec pola
-        return "\n".join(zpl), y + 150  # 150 punktów na kod kreskowy + margines
+        # 150 punktów na kod kreskowy + margines
+        return "\n".join(zpl), y + 150
 
     def html_to_zpl(self, html_content):
         """
@@ -350,7 +358,8 @@ class HtmlToZpl:
             barcode_data = barcode_svg.get('data-barcode', '')
             if barcode_data:
                 # Dodaj kod kreskowy w prawym górnym rogu
-                barcode_zpl, current_y = self._render_barcode(barcode_data, self.width_dots - 250, self.margin_dots)
+                barcode_zpl, current_y = self._render_barcode(
+                    barcode_data, self.width_dots - 250, self.margin_dots)
                 zpl.append(barcode_zpl)
 
         # Funkcja rekurencyjna do przetwarzania elementów HTML
@@ -385,8 +394,8 @@ class HtmlToZpl:
                         font_type = 'normal'
 
                     # Pobierz bezpośredni tekst elementu (bez tekstu dzieci)
-                    text = ''.join(child.string for child in element.children 
-                                 if isinstance(child, NavigableString) and child.string.strip())
+                    text = ''.join(child.string for child in element.children
+                                   if isinstance(child, NavigableString) and child.string.strip())
 
                     if text.strip():
                         # Renderuj tekst elementu

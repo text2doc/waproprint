@@ -106,10 +106,12 @@ def render_multiline_text(text, x, y, font_types, font_type='normal', width=0, a
     # Użyj Field Block (^FB) z zawijaniem linii automatycznie
     # Parametry: szerokość, maksymalna liczba linii, dodatkowy odstęp między liniami, wyrównanie
     # Dla zawijania tekstu używamy większej liczby linii (np. 10)
-    zpl.append(f"^FO{x},{y}^A{font_name}N,{font_width},{font_height}^FB{width},10,0,{align_value}^FD{text}^FS")
+    zpl.append(
+        f"^FO{x},{y}^A{font_name}N,{font_width},{font_height}^FB{width},10,0,{align_value}^FD{text}^FS")
 
     # Szacujemy wysokość na podstawie liczby znaków i szerokości
-    chars_per_line = width // (font_width * 0.6)  # Przybliżona liczba znaków w linii
+    # Przybliżona liczba znaków w linii
+    chars_per_line = width // (font_width * 0.6)
     if chars_per_line <= 0:
         chars_per_line = 1
 

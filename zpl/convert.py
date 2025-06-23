@@ -9,7 +9,8 @@ def simple_convert(zpl_content, output_file):
         "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
     }
 
-    response = requests.post(url, headers=headers, data=zpl_content.encode('utf-8'))
+    response = requests.post(url, headers=headers,
+                             data=zpl_content.encode('utf-8'))
 
     if response.status_code == 200:
         with open(output_file, 'wb') as f:

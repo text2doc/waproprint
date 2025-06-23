@@ -52,12 +52,14 @@ def print_zpl(zpl_data, printer_name=None):
                     hPrinter = win32print.OpenPrinter(printer_name)
                     try:
                         # Rozpocznij dokument
-                        hJob = win32print.StartDocPrinter(hPrinter, 1, ("ZPL Document", None, "RAW"))
+                        hJob = win32print.StartDocPrinter(
+                            hPrinter, 1, ("ZPL Document", None, "RAW"))
                         try:
                             # Rozpocznij stronę
                             win32print.StartPagePrinter(hPrinter)
                             # Zapisz dane ZPL
-                            win32print.WritePrinter(hPrinter, zpl_data.encode('utf-8'))
+                            win32print.WritePrinter(
+                                hPrinter, zpl_data.encode('utf-8'))
                             # Zakończ stronę
                             win32print.EndPagePrinter(hPrinter)
                         finally:
@@ -67,20 +69,24 @@ def print_zpl(zpl_data, printer_name=None):
                         # Zamknij drukarkę
                         win32print.ClosePrinter(hPrinter)
 
-                    logging.info(f"Pomyślnie wysłano dane do drukarki {printer_name}")
+                    logging.info(
+                        f"Pomyślnie wysłano dane do drukarki {printer_name}")
                     return True
                 else:
                     raise ImportError("win32print nie jest dostępny")
             except ImportError:
-                logging.warning("Moduł win32print nie znaleziony, używanie alternatywnej metody drukowania")
+                logging.warning(
+                    "Moduł win32print nie znaleziony, używanie alternatywnej metody drukowania")
             except Exception as e:
-                logging.error(f"Błąd podczas korzystania z drukowania Windows: {e}")
+                logging.error(
+                    f"Błąd podczas korzystania z drukowania Windows: {e}")
                 logging.info("Używanie alternatywnej metody drukowania")
 
             # Alternatywna metoda drukowania (używanie komendy copy dla Windows)
             try:
                 # Utworzenie tymczasowego pliku z kodem ZPL
-                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.zpl')
+                temp_file = tempfile.NamedTemporaryFile(
+                    delete=False, suffix='.zpl')
                 temp_file_name = temp_file.name
 
                 # Zapisanie kodu ZPL do pliku (w trybie binarnym)
@@ -92,7 +98,8 @@ def print_zpl(zpl_data, printer_name=None):
                 logging.info(f"Wykonuję komendę: {print_command}")
                 subprocess.run(print_command, shell=True, check=True)
 
-                logging.info(f"Pomyślnie wysłano dane do drukarki {printer_name}")
+                logging.info(
+                    f"Pomyślnie wysłano dane do drukarki {printer_name}")
                 return True
             except Exception as e:
                 logging.error(f"Błąd wysyłania danych do drukarki: {e}")
@@ -104,13 +111,15 @@ def print_zpl(zpl_data, printer_name=None):
                     time.sleep(1)
                     os.unlink(temp_file_name)
                 except Exception as e:
-                    logging.warning(f"Błąd podczas usuwania pliku tymczasowego: {e}")
+                    logging.warning(
+                        f"Błąd podczas usuwania pliku tymczasowego: {e}")
 
         # Na innych systemach (Linux, Mac)
         else:
             try:
                 # Utworzenie tymczasowego pliku z kodem ZPL
-                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.zpl')
+                temp_file = tempfile.NamedTemporaryFile(
+                    delete=False, suffix='.zpl')
                 temp_file_name = temp_file.name
 
                 # Zapisanie kodu ZPL do pliku
@@ -122,7 +131,8 @@ def print_zpl(zpl_data, printer_name=None):
                 logging.info(f"Wykonuję komendę: {print_command}")
                 subprocess.run(print_command, shell=True, check=True)
 
-                logging.info(f"Pomyślnie wysłano dane do drukarki {printer_name}")
+                logging.info(
+                    f"Pomyślnie wysłano dane do drukarki {printer_name}")
                 return True
             except Exception as e:
                 logging.error(f"Błąd wysyłania danych do drukarki: {e}")
@@ -132,12 +142,14 @@ def print_zpl(zpl_data, printer_name=None):
                 try:
                     os.unlink(temp_file_name)
                 except Exception as e:
-                    logging.warning(f"Błąd podczas usuwania pliku tymczasowego: {e}")
+                    logging.warning(
+                        f"Błąd podczas usuwania pliku tymczasowego: {e}")
 
     except Exception as e:
         logging.error(f"Nieoczekiwany błąd podczas drukowania: {e}")
         return False
-    
+
+
 def save_zpl_to_file(zpl_data, output_file):
     """
     Zapisuje dane ZPL do pliku
@@ -224,9 +236,11 @@ def print_html_from_file(file_path, printer_name=None, dpi=203, label_width=4.0,
         if printer_name:
             result = print_zpl(zpl_data, printer_name)
             if result:
-                logging.info(f"Pomyślnie wydrukowano dokument HTML: {file_path}")
+                logging.info(
+                    f"Pomyślnie wydrukowano dokument HTML: {file_path}")
             else:
-                logging.error(f"Błąd podczas drukowania dokumentu HTML: {file_path}")
+                logging.error(
+                    f"Błąd podczas drukowania dokumentu HTML: {file_path}")
             return result
         elif interactive:
             # W trybie interaktywnym zapytaj, czy drukować
@@ -236,7 +250,8 @@ def print_html_from_file(file_path, printer_name=None, dpi=203, label_width=4.0,
                 for i, drukarka in enumerate(drukarki, 1):
                     print(f"{i}. {drukarka}")
 
-                wybor = input("\nWybierz numer drukarki lub wpisz jej nazwę (Enter, aby pominąć drukowanie): ")
+                wybor = input(
+                    "\nWybierz numer drukarki lub wpisz jej nazwę (Enter, aby pominąć drukowanie): ")
 
                 if wybor:
                     try:
@@ -251,9 +266,11 @@ def print_html_from_file(file_path, printer_name=None, dpi=203, label_width=4.0,
                     if printer_name:
                         result = print_zpl(zpl_data, printer_name)
                         if result:
-                            logging.info(f"Pomyślnie wydrukowano dokument HTML: {file_path}")
+                            logging.info(
+                                f"Pomyślnie wydrukowano dokument HTML: {file_path}")
                         else:
-                            logging.error(f"Błąd podczas drukowania dokumentu HTML: {file_path}")
+                            logging.error(
+                                f"Błąd podczas drukowania dokumentu HTML: {file_path}")
                         return result
             else:
                 print("Nie znaleziono drukarek. Drukowanie pominięte.")
@@ -271,4 +288,3 @@ def print_html_from_file(file_path, printer_name=None, dpi=203, label_width=4.0,
         import traceback
         logging.error(traceback.format_exc())
         return False  # !/usr/bin/env python3
-

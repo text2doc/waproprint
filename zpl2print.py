@@ -14,9 +14,11 @@ try:
 except ImportError:
     WIN32_AVAILABLE = False
     if sys.platform == 'win32':
-        logging.warning("pywin32 is not installed. Windows printing functionality will be disabled.")
+        logging.warning(
+            "pywin32 is not installed. Windows printing functionality will be disabled.")
     else:
-        logging.info("Non-Windows platform detected. Windows printing functionality is not available.")
+        logging.info(
+            "Non-Windows platform detected. Windows printing functionality is not available.")
 
 
 def print_zpl_file(zpl_file_path: str, printer_name: Optional[str] = None) -> Dict[str, Any]:
@@ -44,7 +46,7 @@ def print_zpl_file(zpl_file_path: str, printer_name: Optional[str] = None) -> Di
             'error': 'win32print module not available',
             'status': 'error'
         }
-    
+
     logger = logging.getLogger(__name__)
 
     try:
@@ -67,18 +69,20 @@ def print_zpl_file(zpl_file_path: str, printer_name: Optional[str] = None) -> Di
         printer_names = [printer['name'] for printer in printers]
 
         if printer_name not in printer_names:
-            logger.error(f"Drukarka '{printer_name}' nie została znaleziona w systemie.")
+            logger.error(
+                f"Drukarka '{printer_name}' nie została znaleziona w systemie.")
             return {
                 'success': False,
                 'message': f"Błąd: Drukarka '{printer_name}' nie została znaleziona w systemie. "
-                           f"Dostępne drukarki: {', '.join(printer_names)}",
+                f"Dostępne drukarki: {', '.join(printer_names)}",
                 'status': 'error'
             }
 
         # Sprawdź status drukarki przed wydrukiem
         printer_status = get_printer_status(printer_name)
         if not printer_status['ready']:
-            logger.warning(f"Drukarka {printer_name} nie jest gotowa: {printer_status['status_message']}")
+            logger.warning(
+                f"Drukarka {printer_name} nie jest gotowa: {printer_status['status_message']}")
             return {
                 'success': False,
                 'message': f"Drukarka {printer_name} nie jest gotowa: {printer_status['status_message']}",
@@ -94,7 +98,8 @@ def print_zpl_file(zpl_file_path: str, printer_name: Optional[str] = None) -> Di
 
         # Sprawdź, czy plik ZPL ma poprawną strukturę (zaczyna się od ^XA i kończy ^XZ)
         if not zpl_content.startswith(b'^XA') or not zpl_content.endswith(b'^XZ'):
-            logger.warning("Plik ZPL nie ma standardowego początku ^XA lub końca ^XZ. Próba naprawy pliku.")
+            logger.warning(
+                "Plik ZPL nie ma standardowego początku ^XA lub końca ^XZ. Próba naprawy pliku.")
             # Próba naprawy pliku ZPL
             if not zpl_content.startswith(b'^XA'):
                 zpl_content = b'^XA' + zpl_content
@@ -102,7 +107,8 @@ def print_zpl_file(zpl_file_path: str, printer_name: Optional[str] = None) -> Di
                 zpl_content = zpl_content + b'^XZ'
 
         # Drukowanie bezpośrednio przez RAW - używamy context managera do obsługi zasobów
-        logger.info(f"Rozpoczynam drukowanie pliku {zpl_file_path} na drukarce {printer_name}...")
+        logger.info(
+            f"Rozpoczynam drukowanie pliku {zpl_file_path} na drukarce {printer_name}...")
 
         # Funkcja pomocnicza dla czystszego kodu
         result = send_to_printer(printer_name, zpl_content)
@@ -141,7 +147,8 @@ def print_zpl_file(zpl_file_path: str, printer_name: Optional[str] = None) -> Di
                     'status': 'error'
                 }
         else:
-            logger.info(f"Plik {zpl_file_path} został pomyślnie wydrukowany na drukarce {printer_name}.")
+            logger.info(
+                f"Plik {zpl_file_path} został pomyślnie wydrukowany na drukarce {printer_name}.")
             return {
                 'success': True,
                 'message': f"Plik {zpl_file_path} został pomyślnie wydrukowany na drukarce {printer_name}.",
@@ -149,7 +156,8 @@ def print_zpl_file(zpl_file_path: str, printer_name: Optional[str] = None) -> Di
             }
 
     except Exception as e:
-        logger.exception(f"Wystąpił nieoczekiwany błąd podczas drukowania: {str(e)}")
+        logger.exception(
+            f"Wystąpił nieoczekiwany błąd podczas drukowania: {str(e)}")
         return {
             'success': False,
             'message': f"Wystąpił błąd podczas drukowania: {str(e)}",
@@ -179,7 +187,8 @@ def try_alternative_printing(zpl_file_path: str) -> Dict[str, Any]:
             if result['success']:
                 return result
         except Exception as e:
-            logger.warning(f"Nie udało się drukować na porcie {port}: {str(e)}")
+            logger.warning(
+                f"Nie udało się drukować na porcie {port}: {str(e)}")
 
     return {
         'success': False,
@@ -209,7 +218,8 @@ def send_to_printer(printer_name: str, data: bytes) -> Dict[str, Any]:
     try:
         hPrinter = win32print.OpenPrinter(printer_name)
         try:
-            hJob = win32print.StartDocPrinter(hPrinter, 1, ("ZPL Document", None, "RAW"))
+            hJob = win32print.StartDocPrinter(
+                hPrinter, 1, ("ZPL Document", None, "RAW"))
             try:
                 win32print.StartPagePrinter(hPrinter)
                 win32print.WritePrinter(hPrinter, data)
@@ -377,8 +387,10 @@ def clear_printer_queue(printer_name: str) -> Dict[str, Any]:
     try:
         handle = win32print.OpenPrinter(printer_name)
         try:
-            win32print.SetPrinter(handle, 0, None, win32print.PRINTER_CONTROL_PURGE)
-            logger.info(f"Kolejka drukarki {printer_name} została wyczyszczona.")
+            win32print.SetPrinter(
+                handle, 0, None, win32print.PRINTER_CONTROL_PURGE)
+            logger.info(
+                f"Kolejka drukarki {printer_name} została wyczyszczona.")
             return {
                 'success': True,
                 'message': f"Kolejka drukarki {printer_name} została wyczyszczona."
@@ -386,7 +398,8 @@ def clear_printer_queue(printer_name: str) -> Dict[str, Any]:
         finally:
             win32print.ClosePrinter(handle)
     except Exception as e:
-        logger.error(f"Błąd podczas czyszczenia kolejki drukarki {printer_name}: {str(e)}")
+        logger.error(
+            f"Błąd podczas czyszczenia kolejki drukarki {printer_name}: {str(e)}")
         return {
             'success': False,
             'message': f"Błąd podczas czyszczenia kolejki drukarki {printer_name}: {str(e)}"
@@ -432,7 +445,8 @@ def print_direct_to_port(zpl_file_path: str, port_name: str = "COM3", baud_rate:
         ser.write(zpl_content)
         ser.close()
 
-        logger.info(f"Plik {zpl_file_path} został wysłany bezpośrednio do portu {port_name}.")
+        logger.info(
+            f"Plik {zpl_file_path} został wysłany bezpośrednio do portu {port_name}.")
         return {
             'success': True,
             'message': f"Plik {zpl_file_path} został wysłany bezpośrednio do portu {port_name}."
@@ -444,7 +458,8 @@ def print_direct_to_port(zpl_file_path: str, port_name: str = "COM3", baud_rate:
             'message': "Biblioteka pyserial nie jest zainstalowana. Zainstaluj ją używając pip install pyserial."
         }
     except Exception as e:
-        logger.error(f"Błąd podczas wysyłania danych do portu {port_name}: {str(e)}")
+        logger.error(
+            f"Błąd podczas wysyłania danych do portu {port_name}: {str(e)}")
         return {
             'success': False,
             'message': f"Błąd podczas wysyłania danych do portu {port_name}: {str(e)}"
@@ -504,7 +519,8 @@ def check_and_print_pending_orders(printer_name: str) -> Dict[str, Any]:
             file_basename = os.path.basename(zpl_file)
 
             if file_basename not in printed_files:
-                logger.info(f"Znaleziono niewydrukowany plik ZPL: {file_basename}")
+                logger.info(
+                    f"Znaleziono niewydrukowany plik ZPL: {file_basename}")
 
                 # Drukuj plik
                 result = print_zpl_file(zpl_file, printer_name)
@@ -518,10 +534,12 @@ def check_and_print_pending_orders(printer_name: str) -> Dict[str, Any]:
                         with open(target_path, 'wb') as dest_file:
                             dest_file.write(src_file.read())
 
-                    logger.info(f"Plik {file_basename} został pomyślnie wydrukowany i zapisany jako wydrukowany.")
+                    logger.info(
+                        f"Plik {file_basename} został pomyślnie wydrukowany i zapisany jako wydrukowany.")
                 else:
                     failed_count += 1
-                    logger.error(f"Nie udało się wydrukować pliku {file_basename}: {result['message']}")
+                    logger.error(
+                        f"Nie udało się wydrukować pliku {file_basename}: {result['message']}")
 
         return {
             'success': True,
@@ -531,7 +549,8 @@ def check_and_print_pending_orders(printer_name: str) -> Dict[str, Any]:
         }
 
     except Exception as e:
-        logger.exception(f"Wystąpił błąd podczas sprawdzania niewydrukowanych zamówień: {str(e)}")
+        logger.exception(
+            f"Wystąpił błąd podczas sprawdzania niewydrukowanych zamówień: {str(e)}")
         return {
             'success': False,
             'message': f"Wystąpił błąd podczas sprawdzania niewydrukowanych zamówień: {str(e)}",

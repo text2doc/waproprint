@@ -1,6 +1,7 @@
 import win32print
 import logging
 
+
 def check_printer_queue(printer_name):
     """Sprawdza kolejkę drukarki i zwraca informacje o zadaniach"""
     try:
@@ -23,7 +24,8 @@ def check_printer_queue(printer_name):
                     'printer_name': job['pPrinterName'],
                     'user_name': job['pUserName']
                 })
-                logging.info(f"Zadanie w kolejce: ID={job['JobId']}, Status={job['Status']}, Dokument={job['pDocument']}")
+                logging.info(
+                    f"Zadanie w kolejce: ID={job['JobId']}, Status={job['Status']}, Dokument={job['pDocument']}")
         else:
             logging.info("Kolejka drukarki jest pusta")
 

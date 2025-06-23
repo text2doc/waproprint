@@ -74,7 +74,8 @@ def generuj_zpl_dla_etykiety(dlugosc_cm, dpi=300, szerokosc_cali=4):
     zpl.append(f"^FO50,220^A0N,30,30^FDSzerokosc: {szerokosc_cali} cali^FS")
 
     # Dodanie linii na całej długości etykiety dla wizualizacji
-    zpl.append(f"^FO30,270^GB{szerokosc_dots - 60},{max(dlugosc_dots - 320, 100)},3^FS")
+    zpl.append(
+        f"^FO30,270^GB{szerokosc_dots - 60},{max(dlugosc_dots - 320, 100)},3^FS")
 
     # Ilość kopii
     zpl.append("^PQ1")  # Drukuj 1 etykietę
@@ -127,7 +128,8 @@ def generuj_zpl_autokalibracja(dpi=300, szerokosc_cali=4):
     zpl.append("^FO50,50^A0N,40,40^FDTest etykiet samoprzylepnych^FS")
     zpl.append("^FO50,100^A0N,30,30^FDAutomatyczna kalibracja^FS")
     zpl.append(f"^FO50,150^A0N,25,25^FDRozdzielczość: {dpi} DPI^FS")
-    zpl.append(f"^FO50,180^A0N,25,25^FDSzerokość: {szerokosc_cali} cali ({szerokosc_dots} punktów)^FS")
+    zpl.append(
+        f"^FO50,180^A0N,25,25^FDSzerokość: {szerokosc_cali} cali ({szerokosc_dots} punktów)^FS")
 
     # Dodaj obramowanie
     zpl.append(f"^FO20,20^GB{szerokosc_dots - 40},230,3^FS")
@@ -167,7 +169,8 @@ def print_to_zebra(zpl_data, printer_name):
             hPrinter = win32print.OpenPrinter(printer_name)
             try:
                 # Rozpocznij dokument
-                hJob = win32print.StartDocPrinter(hPrinter, 1, ("ZPL Document", None, "RAW"))
+                hJob = win32print.StartDocPrinter(
+                    hPrinter, 1, ("ZPL Document", None, "RAW"))
                 try:
                     # Rozpocznij stronę
                     win32print.StartPagePrinter(hPrinter)
@@ -185,7 +188,8 @@ def print_to_zebra(zpl_data, printer_name):
             print(f"Pomyślnie wysłano dane do drukarki {printer_name}")
             return True
         except ImportError:
-            print("Moduł win32print nie znaleziony, używanie alternatywnej metody drukowania")
+            print(
+                "Moduł win32print nie znaleziony, używanie alternatywnej metody drukowania")
         except Exception as e:
             print(f"Błąd podczas korzystania z drukowania Windows: {e}")
             print("Używanie alternatywnej metody drukowania")
@@ -231,7 +235,8 @@ def pobierz_liste_drukarek():
     if WINDOWS_PRINTING:
         try:
             # Pobierz listę drukarek za pomocą win32print
-            printers = win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)
+            printers = win32print.EnumPrinters(
+                win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)
             return [printer[2] for printer in printers]
         except Exception as e:
             print(f"Błąd podczas pobierania listy drukarek: {e}")
@@ -240,15 +245,19 @@ def pobierz_liste_drukarek():
     try:
         if sys.platform == 'win32':
             # Windows - użycie wmic
-            result = subprocess.run('wmic printer get name', shell=True, capture_output=True, text=True, check=True)
+            result = subprocess.run(
+                'wmic printer get name', shell=True, capture_output=True, text=True, check=True)
             # Przetworzenie listy drukarek
-            drukarki = [line.strip() for line in result.stdout.split('\n') if line.strip() and line.strip() != 'Name']
+            drukarki = [line.strip() for line in result.stdout.split(
+                '\n') if line.strip() and line.strip() != 'Name']
             return drukarki
         else:
             # Linux/Mac - użycie lpstat
-            result = subprocess.run('lpstat -a', shell=True, capture_output=True, text=True, check=True)
+            result = subprocess.run(
+                'lpstat -a', shell=True, capture_output=True, text=True, check=True)
             # Przetworzenie listy drukarek
-            drukarki = [line.split()[0] for line in result.stdout.split('\n') if line.strip()]
+            drukarki = [line.split()[0]
+                        for line in result.stdout.split('\n') if line.strip()]
             return drukarki
     except Exception as e:
         print(f"Błąd podczas pobierania listy drukarek: {e}")
@@ -259,15 +268,24 @@ def main():
     """
     Główna funkcja programu.
     """
-    parser = argparse.ArgumentParser(description='Drukowanie testowych etykiet ZPL na drukarce termicznej')
-    parser.add_argument('printer_name', nargs='?', help='Nazwa drukarki (domyślnie: wybór z listy)')
-    parser.add_argument('--list', '-l', action='store_true', help='Wyświetl listę dostępnych drukarek')
-    parser.add_argument('--length', '-d', type=float, help='Długość etykiety w cm (domyślnie: 5, 15, 30)')
-    parser.add_argument('--save', '-s', action='store_true', help='Zapisz kod ZPL do pliku')
-    parser.add_argument('--interactive', '-i', action='store_true', help='Tryb interaktywny z wyborem drukarki')
-    parser.add_argument('--dpi', type=int, default=300, help='Rozdzielczość drukarki w DPI (domyślnie: 300)')
-    parser.add_argument('--width', '-w', type=float, default=4.0, help='Szerokość etykiety w calach (domyślnie: 4.0)')
-    parser.add_argument('--calibration', '-c', action='store_true', help='Drukuj etykietę kalibracyjną')
+    parser = argparse.ArgumentParser(
+        description='Drukowanie testowych etykiet ZPL na drukarce termicznej')
+    parser.add_argument('printer_name', nargs='?',
+                        help='Nazwa drukarki (domyślnie: wybór z listy)')
+    parser.add_argument('--list', '-l', action='store_true',
+                        help='Wyświetl listę dostępnych drukarek')
+    parser.add_argument('--length', '-d', type=float,
+                        help='Długość etykiety w cm (domyślnie: 5, 15, 30)')
+    parser.add_argument('--save', '-s', action='store_true',
+                        help='Zapisz kod ZPL do pliku')
+    parser.add_argument('--interactive', '-i', action='store_true',
+                        help='Tryb interaktywny z wyborem drukarki')
+    parser.add_argument('--dpi', type=int, default=300,
+                        help='Rozdzielczość drukarki w DPI (domyślnie: 300)')
+    parser.add_argument('--width', '-w', type=float, default=4.0,
+                        help='Szerokość etykiety w calach (domyślnie: 4.0)')
+    parser.add_argument('--calibration', '-c', action='store_true',
+                        help='Drukuj etykietę kalibracyjną')
     args = parser.parse_args()
 
     # Pobierz listę drukarek
@@ -311,12 +329,14 @@ def main():
                     printer_name = wybor
         else:
             if not printer_name:
-                printer_name = input("Nie znaleziono drukarek. Wpisz nazwę drukarki ręcznie: ")
+                printer_name = input(
+                    "Nie znaleziono drukarek. Wpisz nazwę drukarki ręcznie: ")
                 if not printer_name:
                     printer_name = "ZDesigner GK420d"  # Domyślna drukarka, jeśli nic nie wpisano
 
     if not printer_name:
-        printer_name = "ZDesigner GK420d"  # Domyślna drukarka, jeśli wszystko inne zawiodło
+        # Domyślna drukarka, jeśli wszystko inne zawiodło
+        printer_name = "ZDesigner GK420d"
 
     # Pytanie o rozdzielczość DPI w trybie interaktywnym
     dpi = args.dpi
@@ -326,17 +346,20 @@ def main():
             try:
                 dpi = int(dpi_input)
             except ValueError:
-                print(f"Nieprawidłowa wartość, używam domyślnej rozdzielczości {dpi} DPI")
+                print(
+                    f"Nieprawidłowa wartość, używam domyślnej rozdzielczości {dpi} DPI")
 
     # Pytanie o szerokość etykiety w trybie interaktywnym
     szerokosc_cali = args.width
     if args.interactive:
-        szerokosc_input = input(f"\nPodaj szerokość etykiety w calach [{szerokosc_cali}]: ")
+        szerokosc_input = input(
+            f"\nPodaj szerokość etykiety w calach [{szerokosc_cali}]: ")
         if szerokosc_input:
             try:
                 szerokosc_cali = float(szerokosc_input)
             except ValueError:
-                print(f"Nieprawidłowa wartość, używam domyślnej szerokości {szerokosc_cali} cali")
+                print(
+                    f"Nieprawidłowa wartość, używam domyślnej szerokości {szerokosc_cali} cali")
 
     # Wybór długości etykiety lub kalibracji w trybie interaktywnym
     if args.interactive and not args.length and not args.calibration:
@@ -385,7 +408,8 @@ def main():
     # Drukowanie etykiety kalibracyjnej
     if args.calibration:
         zpl_data = generuj_zpl_autokalibracja(dpi, szerokosc_cali)
-        print(f"Drukuję etykietę kalibracyjną na drukarce {printer_name} ({dpi} DPI, {szerokosc_cali} cali)")
+        print(
+            f"Drukuję etykietę kalibracyjną na drukarce {printer_name} ({dpi} DPI, {szerokosc_cali} cali)")
 
         # Zapisz kod ZPL do pliku, jeśli zażądano
         if args.save:
@@ -420,7 +444,8 @@ def main():
 
         for i, dlugosc in enumerate(test_dlugosci):
             zpl_data = generuj_zpl_dla_etykiety(dlugosc, dpi, szerokosc_cali)
-            print(f"\nDrukuję etykietę {i + 1}/{len(test_dlugosci)}: {dlugosc} cm")
+            print(
+                f"\nDrukuję etykietę {i + 1}/{len(test_dlugosci)}: {dlugosc} cm")
 
             # Zapisz kod ZPL do pliku, jeśli zażądano
             if args.save:
@@ -448,5 +473,5 @@ if __name__ == '__main__':
 
     main()
 
-#python zpl30cm.py "ZDesigner GK420d"
-#python python-thermal-zpl.py "ZDesigner GK420d" --dpi 203 --length 10 --save
+# python zpl30cm.py "ZDesigner GK420d"
+# python python-thermal-zpl.py "ZDesigner GK420d" --dpi 203 --length 10 --save

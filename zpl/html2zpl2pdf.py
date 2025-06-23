@@ -1,17 +1,18 @@
+import configparser
+import pyodbc
 from datetime import date, timedelta
 import logging
 import sys
 import os
 import pdfkit  # Import pdfkit
-from weasyprint import HTML, CSS #added for improved pdf generation
-from weasyprint.fonts import FontConfiguration #added for font config
+from weasyprint import HTML, CSS  # added for improved pdf generation
+from weasyprint.fonts import FontConfiguration  # added for font config
 
 # Add the 'lib' directory to the Python path *explicitly*.
 current_dir = os.path.dirname(os.path.abspath(__file__))
 lib_dir = os.path.join(current_dir, 'lib')
 sys.path.insert(0, lib_dir)
 
-import pyodbc
 
 class DatabaseManager:
     """Manages database connections and operations."""
@@ -64,7 +65,6 @@ class DatabaseManager:
             self.connection.close()
         print("Database connection closed.")
 
-
     def fetch_all(self, query, params=None):
         """
         Executes a SELECT query and returns all results.  Handles missing columns.
@@ -85,7 +85,8 @@ class DatabaseManager:
             return self.cursor.fetchall()  # Return Row objects
         except pyodbc.Error as ex:
             sqlstate = ex.args[0]
-            print(f"Error executing query: {sqlstate}")  # Keep original error message
+            # Keep original error message
+            print(f"Error executing query: {sqlstate}")
             return None
 
     def execute_non_query(self, query, params=None):
@@ -111,9 +112,6 @@ class DatabaseManager:
             self.connection.rollback()
             return -1
 
-
-
-import configparser
 
 class ConfigManager:
     """Manages configuration settings from a file."""
@@ -143,7 +141,6 @@ class ConfigManager:
         return self.config['DOCUMENT']
 
 
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -153,10 +150,6 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-from datetime import date, timedelta
-import logging
-import sys
-import os
 
 # Add the 'lib' directory to the Python path *explicitly*.
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -173,6 +166,7 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+
 
 def get_zamowienia_data(dni):
     """
@@ -236,9 +230,8 @@ def get_zamowienia_data(dni):
                     for col in row.cursor_description:
                         col_name = col[0]
                         value = getattr(row, col_name)
-                        if value is not None and 'KONTRAHENT' not in col_name.upper() and 'ID_ARTYKULU' not in col_name.upper() and 'ID_POZYCJI' not in col_name.upper() :
+                        if value is not None and 'KONTRAHENT' not in col_name.upper() and 'ID_ARTYKULU' not in col_name.upper() and 'ID_POZYCJI' not in col_name.upper():
                             orders[order_id]['order_data'][col_name] = value
-
 
                 # --- 2. Extract Contractor Data (Dynamically) ---
                     for col in row.cursor_description:
@@ -254,7 +247,7 @@ def get_zamowienia_data(dni):
                     value = getattr(row, col_name)
                     if value is not None and 'ZAMOWIENIE' not in col_name.upper() and 'KONTRAHENT' not in col_name.upper():
                         item[col_name] = value
-                if item: # Append only if item has data
+                if item:  # Append only if item has data
                     orders[order_id]['items'].append(item)
 
         return orders
@@ -264,6 +257,7 @@ def get_zamowienia_data(dni):
         return None
     finally:
         db_manager.disconnect()
+
 
 def print_basic_order_info(orders):
     """Prints basic order information, skipping empty values."""
@@ -302,14 +296,17 @@ def print_basic_order_info(orders):
                 print("  " + "-" * 18)
         print("=" * 30 + "\n")
 
+
 def generate_pdf_from_html(html_content, output_filename):
     """Generates a PDF from HTML content using WeasyPrint."""
     try:
         font_config = FontConfiguration()
-        HTML(string=html_content).write_pdf(output_filename, font_config=font_config)
+        HTML(string=html_content).write_pdf(
+            output_filename, font_config=font_config)
         logging.info(f"PDF generated successfully: {output_filename}")
     except Exception as e:
         logging.exception(f"Error generating PDF: {e}")
+
 
 def html_to_zpl(html_content, scale_x=2, scale_y=2):
     """Converts HTML content to ZPL, with basic scaling.  Very rudimentary!"""
@@ -318,17 +315,19 @@ def html_to_zpl(html_content, scale_x=2, scale_y=2):
     zpl_code = "^XA\n"  # Start ZPL
 
     # Remove HTML tags and scale text (very crudely)
-    text = html_content.replace("<br>", "\n").replace("<h1>", "").replace("</h1>", "\n").replace("<b>", "").replace("</b>", "")
+    text = html_content.replace("<br>", "\n").replace("<h1>", "").replace(
+        "</h1>", "\n").replace("<b>", "").replace("</b>", "")
     lines = text.split("\n")
 
-     # Add the 'lib' directory to the Python path *explicitly*.
+    # Add the 'lib' directory to the Python path *explicitly*.
     current_dir = os.path.dirname(os.path.abspath(__file__))
     lib_dir = os.path.join(current_dir, 'lib')
     sys.path.insert(0, lib_dir)
     y_pos = 20
     for line in lines:
         if line.strip():  # Skip empty lines
-            zpl_code += f"^FO20,{y_pos}^A0,{20*scale_y},{15*scale_x}^FD{line.strip()}^FS\n" # A0 font, normal
+            # A0 font, normal
+            zpl_code += f"^FO20,{y_pos}^A0,{20*scale_y},{15*scale_x}^FD{line.strip()}^FS\n"
             y_pos += 20 * scale_y
 
     zpl_code += "^XZ"  # End ZPL
@@ -358,13 +357,14 @@ def generate_outputs_from_html(html_file):
 
     # 2. Generate ZPL (rudimentary conversion)
     zpl_filename = os.path.splitext(html_file)[0] + ".zpl"
-    zpl_code = html_to_zpl(html_content) # Very basic conversion
+    zpl_code = html_to_zpl(html_content)  # Very basic conversion
     try:
         with open(zpl_filename, 'w', encoding='utf-8') as f:
             f.write(zpl_code)
         logging.info(f"ZPL generated successfully: {zpl_filename}")
     except Exception as e:
         logging.exception(f"Error writing ZPL file: {e}")
+
 
 if __name__ == '__main__':
     # num_days = 7
@@ -373,9 +373,9 @@ if __name__ == '__main__':
 
     # Example usage with a dummy HTML file
     # if orders:
-        # In a real scenario, you'd generate the HTML dynamically
-        # based on the 'orders' data.  For this example, we'll use
-        # a static HTML file.
+    # In a real scenario, you'd generate the HTML dynamically
+    # based on the 'orders' data.  For this example, we'll use
+    # a static HTML file.
     generate_outputs_from_html("../zamowienie.html")
     # else:
     #     print("No orders found or an error occurred.")

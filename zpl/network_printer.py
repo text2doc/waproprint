@@ -49,7 +49,8 @@ def print_zpl_to_network_printer(zpl_file, printer_ip=None, port=None, config=No
             port = config.get_thermal_printer_port()
             if not port:
                 port = 9100  # Domyślny port dla drukarek Zebra
-                logger.info(f"Nie znaleziono portu drukarki w konfiguracji, używam domyślnego: {port}")
+                logger.info(
+                    f"Nie znaleziono portu drukarki w konfiguracji, używam domyślnego: {port}")
 
         # Odczytaj plik ZPL
         try:
@@ -84,7 +85,8 @@ def print_zpl_to_network_printer(zpl_file, printer_ip=None, port=None, config=No
 
             # Połącz z drukarką
             try:
-                logger.info(f"Łączenie z drukarką na adresie {printer_ip}:{port}...")
+                logger.info(
+                    f"Łączenie z drukarką na adresie {printer_ip}:{port}...")
                 s.connect((printer_ip, port))
             except socket.error as e:
                 error_msg = f"Błąd połączenia: {e}"
@@ -142,7 +144,8 @@ def list_zpl_files(directory=None, config=None):
         if directory is None:
             directory = config.get_zo_zpl_dir()
             if not directory:
-                logger.warning("Nie znaleziono ścieżki katalogu ZPL w konfiguracji, używam bieżącego katalogu")
+                logger.warning(
+                    "Nie znaleziono ścieżki katalogu ZPL w konfiguracji, używam bieżącego katalogu")
                 directory = '.'
 
         # Upewnij się, że katalog istnieje
@@ -157,7 +160,8 @@ def list_zpl_files(directory=None, config=None):
             if f.lower().endswith('.zpl')
         ]
 
-        logger.info(f"Znaleziono {len(zpl_files)} plików ZPL w katalogu {directory}")
+        logger.info(
+            f"Znaleziono {len(zpl_files)} plików ZPL w katalogu {directory}")
         return zpl_files
 
     except Exception as e:

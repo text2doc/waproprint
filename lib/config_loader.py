@@ -2,11 +2,13 @@ import os
 import configparser
 import logging
 
+
 def load_config():
     """Wczytuje konfigurację z pliku config.ini"""
     try:
         config = configparser.ConfigParser()
-        config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config.ini')
+        config_path = os.path.join(os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))), 'config.ini')
         logging.info(f"Wczytywanie konfiguracji z: {config_path}")
 
         if not os.path.exists(config_path):

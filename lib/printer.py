@@ -15,9 +15,11 @@ try:
 except ImportError:
     WIN32_AVAILABLE = False
     if sys.platform == 'win32':
-        logging.warning("pywin32 is not installed. Windows printing functionality will be disabled.")
+        logging.warning(
+            "pywin32 is not installed. Windows printing functionality will be disabled.")
     else:
-        logging.info("Non-Windows platform detected. Windows printing functionality is not available.")
+        logging.info(
+            "Non-Windows platform detected. Windows printing functionality is not available.")
 
 from thermal_printer import ThermalPrinterManager
 
@@ -49,26 +51,32 @@ class Printer:
                 if not self.printer_name:
                     # Jeśli nie znaleziono drukarki termicznej, użyj domyślnej drukarki systemowej
                     self.printer_name = win32print.GetDefaultPrinter()
-                    self.logger.info(f"Używam domyślnej drukarki systemowej: {self.printer_name}")
+                    self.logger.info(
+                        f"Używam domyślnej drukarki systemowej: {self.printer_name}")
                 else:
-                    self.logger.info(f"Używam domyślnej drukarki termicznej: {self.printer_name}")
+                    self.logger.info(
+                        f"Używam domyślnej drukarki termicznej: {self.printer_name}")
 
             # Sprawdź, czy drukarka istnieje w systemie
             all_printers = self.printer_manager.get_available_printers()
             printer_names = [printer['name'] for printer in all_printers]
 
             if self.printer_name not in printer_names:
-                self.logger.error(f"Drukarka '{self.printer_name}' nie istnieje w systemie.")
+                self.logger.error(
+                    f"Drukarka '{self.printer_name}' nie istnieje w systemie.")
                 self.printer_name = None
                 return False
 
             # Sprawdź status drukarki
-            printer_status = self.printer_manager.get_printer_status(self.printer_name)
+            printer_status = self.printer_manager.get_printer_status(
+                self.printer_name)
             if not printer_status['ready']:
-                self.logger.warning(f"Drukarka {self.printer_name} nie jest gotowa: {printer_status['status_message']}")
+                self.logger.warning(
+                    f"Drukarka {self.printer_name} nie jest gotowa: {printer_status['status_message']}")
                 return False
 
-            self.logger.info(f"Drukarka {self.printer_name} jest gotowa do użycia.")
+            self.logger.info(
+                f"Drukarka {self.printer_name} jest gotowa do użycia.")
             return True
 
         except Exception as e:
@@ -95,32 +103,39 @@ class Printer:
             self.logger.error(f"Plik {pdf_path} nie istnieje.")
             return False
 
-        self.logger.info(f"Próba drukowania pliku {pdf_path} na drukarce {self.printer_name}")
+        self.logger.info(
+            f"Próba drukowania pliku {pdf_path} na drukarce {self.printer_name}")
 
         # Najpierw próbuj bezpośredniego drukowania
         direct_print_result = self._print_pdf_directly(pdf_path)
 
         if direct_print_result['success']:
-            self.logger.info(f"Pomyślnie wydrukowano plik {pdf_path} bezpośrednio.")
+            self.logger.info(
+                f"Pomyślnie wydrukowano plik {pdf_path} bezpośrednio.")
             return True
 
         # Jeśli bezpośrednie drukowanie nie powiodło się, a drukarka jest termiczna,
         # spróbuj konwersji do ZPL
         if self.printer_name in self.printer_manager.get_thermal_printers():
-            self.logger.info("Bezpośrednie drukowanie się nie powiodło. Próbuję konwersji do ZPL...")
+            self.logger.info(
+                "Bezpośrednie drukowanie się nie powiodło. Próbuję konwersji do ZPL...")
             zpl_print_result = self._print_pdf_as_zpl(pdf_path)
 
             if zpl_print_result['success']:
-                self.logger.info(f"Pomyślnie wydrukowano plik {pdf_path} poprzez konwersję do ZPL.")
+                self.logger.info(
+                    f"Pomyślnie wydrukowano plik {pdf_path} poprzez konwersję do ZPL.")
                 return True
 
         # Spróbuj drukować przez zewnętrzny program (Adobe Reader)
-        self.logger.info("Wszystkie metody wewnętrzne zawiodły. Próbuję drukować przez zewnętrzną aplikację...")
+        self.logger.info(
+            "Wszystkie metody wewnętrzne zawiodły. Próbuję drukować przez zewnętrzną aplikację...")
         if self._print_with_adobe(pdf_path):
-            self.logger.info(f"Pomyślnie wydrukowano plik {pdf_path} przy użyciu Adobe Reader.")
+            self.logger.info(
+                f"Pomyślnie wydrukowano plik {pdf_path} przy użyciu Adobe Reader.")
             return True
 
-        self.logger.error(f"Nie udało się wydrukować pliku {pdf_path} żadną metodą.")
+        self.logger.error(
+            f"Nie udało się wydrukować pliku {pdf_path} żadną metodą.")
         return False
 
     def _print_pdf_directly(self, pdf_path):
@@ -138,7 +153,8 @@ class Printer:
             try:
                 self.logger.info(f"Próba drukowania przez rundll32...")
                 subprocess.run(
-                    ['rundll32.exe', 'mshtml.dll,PrintHTML', pdf_path, '/p:' + self.printer_name],
+                    ['rundll32.exe', 'mshtml.dll,PrintHTML',
+                        pdf_path, '/p:' + self.printer_name],
                     check=True,
                     capture_output=True,
                     timeout=60  # Timeout po 60 sekundach
@@ -148,7 +164,8 @@ class Printer:
                 direct_print_success = True
 
             except subprocess.SubprocessError as e:
-                self.logger.warning(f"Nie udało się wydrukować PDF przez rundll32: {str(e)}")
+                self.logger.warning(
+                    f"Nie udało się wydrukować PDF przez rundll32: {str(e)}")
                 direct_print_success = False
 
             # Metoda 2: Alternatywna metoda - użycie GhostScript
@@ -165,12 +182,15 @@ class Printer:
                         pdf_path
                     ]
 
-                    subprocess.run(args, check=True, capture_output=True, timeout=60)
-                    self.logger.info(f"PDF został pomyślnie wydrukowany używając GhostScript")
+                    subprocess.run(args, check=True,
+                                   capture_output=True, timeout=60)
+                    self.logger.info(
+                        f"PDF został pomyślnie wydrukowany używając GhostScript")
                     direct_print_success = True
 
                 except (subprocess.SubprocessError, FileNotFoundError) as e:
-                    self.logger.warning(f"Nie udało się wydrukować PDF przez GhostScript: {str(e)}")
+                    self.logger.warning(
+                        f"Nie udało się wydrukować PDF przez GhostScript: {str(e)}")
                     direct_print_success = False
 
             # Sprawdź, czy drukowanie się powiodło
@@ -180,7 +200,8 @@ class Printer:
                 jobs = self.printer_manager.get_printer_jobs(self.printer_name)
 
                 if jobs:
-                    self.logger.info(f"Dokument został wysłany do drukarki i znajduje się w kolejce")
+                    self.logger.info(
+                        f"Dokument został wysłany do drukarki i znajduje się w kolejce")
                     return {
                         'success': True,
                         'message': f"Plik {pdf_path} został wysłany do drukowania i znajduje się w kolejce.",
@@ -203,7 +224,8 @@ class Printer:
                 }
 
         except Exception as e:
-            self.logger.exception(f"Wystąpił nieoczekiwany błąd podczas drukowania PDF: {str(e)}")
+            self.logger.exception(
+                f"Wystąpił nieoczekiwany błąd podczas drukowania PDF: {str(e)}")
             return {
                 'success': False,
                 'message': f"Wystąpił błąd podczas drukowania PDF: {str(e)}",
@@ -224,12 +246,14 @@ class Printer:
             from zebrafy import ZebrafyPDF
 
             # Pobierz informacje o drukarce
-            printer_info = self.printer_manager.detected_printers.get(self.printer_name, {})
+            printer_info = self.printer_manager.detected_printers.get(
+                self.printer_name, {})
             printer_specs = printer_info.get('specs', {})
             dpi = printer_specs.get('dpi', 203)
 
             # Konwertuj PDF do ZPL
-            self.logger.info(f"Konwertuję PDF na format ZPL z rozdzielczością {dpi} DPI...")
+            self.logger.info(
+                f"Konwertuję PDF na format ZPL z rozdzielczością {dpi} DPI...")
             with open(pdf_path, "rb") as pdf:
                 zpl_string = ZebrafyPDF(
                     pdf.read(),
@@ -254,26 +278,31 @@ class Printer:
 
             # Wydrukuj ZPL na drukarce termicznej
             self.logger.info(f"Drukuję ZPL na drukarce: {self.printer_name}")
-            result = self.printer_manager.print_zpl_file(temp_zpl_path, self.printer_name)
+            result = self.printer_manager.print_zpl_file(
+                temp_zpl_path, self.printer_name)
 
             # Opcjonalnie - usuń tymczasowy plik ZPL po wydrukowaniu
             try:
                 os.remove(temp_zpl_path)
-                self.logger.info(f"Usunięto tymczasowy plik ZPL: {temp_zpl_path}")
+                self.logger.info(
+                    f"Usunięto tymczasowy plik ZPL: {temp_zpl_path}")
             except Exception as e:
-                self.logger.warning(f"Nie udało się usunąć tymczasowego pliku ZPL: {str(e)}")
+                self.logger.warning(
+                    f"Nie udało się usunąć tymczasowego pliku ZPL: {str(e)}")
 
             return result
 
         except ImportError:
-            self.logger.error("Biblioteka zebrafy nie jest zainstalowana. Nie można konwertować do ZPL.")
+            self.logger.error(
+                "Biblioteka zebrafy nie jest zainstalowana. Nie można konwertować do ZPL.")
             return {
                 'success': False,
                 'message': "Biblioteka zebrafy nie jest zainstalowana. Nie można konwertować do ZPL.",
                 'status': 'error'
             }
         except Exception as e:
-            self.logger.exception(f"Wystąpił błąd podczas konwersji PDF do ZPL: {str(e)}")
+            self.logger.exception(
+                f"Wystąpił błąd podczas konwersji PDF do ZPL: {str(e)}")
             return {
                 'success': False,
                 'message': f"Wystąpił błąd podczas konwersji PDF do ZPL: {str(e)}",
@@ -306,7 +335,8 @@ class Printer:
                     break
 
             if not adobe_path:
-                self.logger.error("Nie znaleziono zainstalowanego Adobe Reader.")
+                self.logger.error(
+                    "Nie znaleziono zainstalowanego Adobe Reader.")
                 return False
 
             self.logger.info(f"Drukowanie przez Adobe Reader: {adobe_path}")
@@ -318,14 +348,16 @@ class Printer:
             # Poczekaj na zakończenie procesu z timeout
             try:
                 process.wait(timeout=30)
-                self.logger.info(f"Adobe Reader zakończył drukowanie z kodem: {process.returncode}")
+                self.logger.info(
+                    f"Adobe Reader zakończył drukowanie z kodem: {process.returncode}")
                 return process.returncode == 0
             except subprocess.TimeoutExpired:
                 process.kill()
-                self.logger.warning("Timeout podczas drukowania przez Adobe Reader.")
+                self.logger.warning(
+                    "Timeout podczas drukowania przez Adobe Reader.")
                 return False
 
         except Exception as e:
-            self.logger.error(f"Błąd podczas drukowania przez Adobe Reader: {str(e)}")
+            self.logger.error(
+                f"Błąd podczas drukowania przez Adobe Reader: {str(e)}")
             return False
-

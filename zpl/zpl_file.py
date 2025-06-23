@@ -261,13 +261,15 @@ def repair_zpl_file(zpl_file, output_file=None, backup=True):
 
         if cleaned_zpl != zpl_code:
             zpl_code = cleaned_zpl
-            fixed_issues.append('Usunięto kod ZPL znajdujący się poza etykietami')
+            fixed_issues.append(
+                'Usunięto kod ZPL znajdujący się poza etykietami')
 
     # 4. Dodaj domyślne ustawienia prędkości jeśli brak
     if '^PR' not in zpl_code:
         # Dodaj po ^XA
         zpl_code = zpl_code.replace('^XA', '^XA\n^PR3')
-        fixed_issues.append('Dodano domyślne ustawienie prędkości drukowania (^PR3)')
+        fixed_issues.append(
+            'Dodano domyślne ustawienie prędkości drukowania (^PR3)')
 
     # Zapisz naprawiony plik
     try:

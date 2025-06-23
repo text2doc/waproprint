@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # html2pdf3.py
 
+from lib.ConfigManager import ConfigManager
 import asyncio
 from playwright.async_api import async_playwright
 import socket
@@ -22,9 +23,11 @@ try:
 except ImportError:
     WIN32_AVAILABLE = False
     if sys.platform == 'win32':
-        logging.warning("pywin32 is not installed. Windows printing functionality will be disabled.")
+        logging.warning(
+            "pywin32 is not installed. Windows printing functionality will be disabled.")
     else:
-        logging.info("Non-Windows platform detected. Windows printing functionality is not available.")
+        logging.info(
+            "Non-Windows platform detected. Windows printing functionality is not available.")
 
 
 async def print_to_zebra_printer(url, printer_name=None, connection_type="windows",
@@ -50,7 +53,8 @@ async def print_to_zebra_printer(url, printer_name=None, connection_type="window
             page = await browser.new_page()
 
             # Ustaw wymiary strony na wymiary etykiety
-            width_px = int(label_width_mm * 3.78)  # Przybliżona konwersja mm na px (96 DPI)
+            # Przybliżona konwersja mm na px (96 DPI)
+            width_px = int(label_width_mm * 3.78)
             height_px = int(label_height_mm * 3.78)
             await page.set_viewport_size({"width": width_px, "height": height_px})
 
@@ -85,7 +89,8 @@ async def print_to_zebra_printer(url, printer_name=None, connection_type="window
             html_content = await page.content()
 
             # 3. Konwertuj HTML na ZPL
-            zpl_code = html_to_zpl(html_content, label_width_mm, label_height_mm)
+            zpl_code = html_to_zpl(
+                html_content, label_width_mm, label_height_mm)
 
             # 4. Drukuj w zależności od wybranej metody połączenia
             if connection_type == "windows":
@@ -165,7 +170,8 @@ def html_to_zpl(html_content, width_mm=104, height_mm=150, dpi=203):
         if line.strip():
             # Dodaj pole tekstowe
             zpl += f"^FO20,{y_position}"  # Pozycja pola (x,y)
-            zpl += "^A0N,20,20"  # Czcionka (czcionka 0, normalna, wysokość 20, szerokość 20)
+            # Czcionka (czcionka 0, normalna, wysokość 20, szerokość 20)
+            zpl += "^A0N,20,20"
             zpl += f"^FD{line.strip()}^FS"  # Dane pola i zakończenie pola
             y_position += 30  # Odstęp między liniami
 
@@ -184,7 +190,8 @@ def print_windows_raw(zpl_code, printer_name=None):
         hPrinter = win32print.OpenPrinter(printer_name)
         try:
             # Rozpocznij dokument
-            hJob = win32print.StartDocPrinter(hPrinter, 1, ("ZPL Document", None, "RAW"))
+            hJob = win32print.StartDocPrinter(
+                hPrinter, 1, ("ZPL Document", None, "RAW"))
             try:
                 # Rozpocznij stronę
                 win32print.StartPagePrinter(hPrinter)
@@ -227,7 +234,6 @@ def print_network_raw(zpl_code, network_args):
         return False
 
 
-from lib.ConfigManager import ConfigManager
 config = ConfigManager()
 zpl_dir = config.get_zo_zpl_dir()
 # Pobierz parametry drukarki z konfiguracji
@@ -363,7 +369,8 @@ async def html_to_pdf(url, output_path=None, label_width_mm=104, continuous=True
             content_height = await page.evaluate(height_js)
 
             # Konwertuj mm na px używając podanego DPI
-            width_px = int(label_width_mm * dpi / 25.4)  # Konwersja mm na px przy danym DPI
+            # Konwersja mm na px przy danym DPI
+            width_px = int(label_width_mm * dpi / 25.4)
 
             # Ustaw wymiary viewportu żeby dopasować je do szerokości etykiety
             await page.set_viewport_size({"width": width_px, "height": content_height})
@@ -390,7 +397,8 @@ async def html_to_pdf(url, output_path=None, label_width_mm=104, continuous=True
             }
 
             # Usuń None wartości z parametrów
-            pdf_options = {k: v for k, v in pdf_options.items() if v is not None}
+            pdf_options = {k: v for k, v in pdf_options.items()
+                           if v is not None}
 
             # Generuj PDF
             await page.pdf(**pdf_options)
@@ -416,7 +424,8 @@ async def html_to_pdf(url, output_path=None, label_width_mm=104, continuous=True
                     """
                     return output_path
                 except Exception as e:
-                    print(f"Uwaga: Nie można zweryfikować poprawności pliku PDF: {e}")
+                    print(
+                        f"Uwaga: Nie można zweryfikować poprawności pliku PDF: {e}")
                     return output_path
             return None
 
@@ -425,10 +434,8 @@ async def html_to_pdf(url, output_path=None, label_width_mm=104, continuous=True
         return None
 
 
-
-
 # Przykład użycia:
-import asyncio
+
 
 async def main():
     pdf_path = await html_to_pdf(
@@ -449,10 +456,8 @@ async def main():
 # asyncio.run(main())
 
 
-
-
 # Przykład użycia:
-import asyncio
+
 
 async def main3():
     pdf_path = await html_to_pdf(
@@ -474,13 +479,15 @@ async def main3():
 
 # zebra_print.zpl
 # Przykład użycia:
+
+
 async def main2():
     success = await print_to_zebra_printer(
         "zamowienie.html",
         printer_name=printer_name,  # Nazwa twojej drukarki Zebra
         connection_type="file",  # Użycie API Windows
         label_width_mm=104  # Szerokość etykiety
-        #label_height_mm=150  # Wysokość etykiety
+        # label_height_mm=150  # Wysokość etykiety
     )
 
     if success:

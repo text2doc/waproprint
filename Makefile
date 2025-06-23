@@ -53,11 +53,11 @@ lint: ## Run linter
 
 format: ## Format code
 	@echo "${GREEN}Formatting code...${RESET}"
-	poetry run autopep8 --in-place --recursive .
+	poetry run autopep8 --in-place --recursive . --exclude venv
 
 check-format: ## Check code formatting
 	@echo "${GREEN}Checking code formatting...${RESET}"
-	poetry run autopep8 --diff --recursive .
+	poetry run autopep8 --diff --recursive . --exclude venv
 
 # Build and publish
 build: ## Build the package

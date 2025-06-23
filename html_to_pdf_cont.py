@@ -7,6 +7,7 @@ Główny moduł do konwersji HTML do ciągłego PDF
 Integruje funkcjonalności z innych modułów do kompletnego procesu konwersji
 """
 
+import shutil
 import os
 import sys
 import logging
@@ -99,17 +100,21 @@ def run_wkhtmltopdf(wkhtmltopdf_path, html_file, pdf_file, options):
             logger.warning("Przekroczono czas oczekiwania na wkhtmltopdf")
 
         if process.returncode != 0:
-            logger.warning(f"wkhtmltopdf zakończył się kodem błędu {process.returncode}")
+            logger.warning(
+                f"wkhtmltopdf zakończył się kodem błędu {process.returncode}")
             if stderr:
-                logger.warning(f"Błąd: {stderr.decode('utf-8', errors='ignore')}")
+                logger.warning(
+                    f"Błąd: {stderr.decode('utf-8', errors='ignore')}")
             return False
 
         # Sprawdź, czy PDF został wygenerowany
         if os.path.exists(temp_pdf) and os.path.getsize(temp_pdf) > 0:
-            logger.info(f"PDF został wygenerowany pomyślnie, rozmiar: {os.path.getsize(temp_pdf) / 1024:.2f} KB")
+            logger.info(
+                f"PDF został wygenerowany pomyślnie, rozmiar: {os.path.getsize(temp_pdf) / 1024:.2f} KB")
             return True
         else:
-            logger.warning("Plik PDF nie został wygenerowany lub ma zerowy rozmiar")
+            logger.warning(
+                "Plik PDF nie został wygenerowany lub ma zerowy rozmiar")
             return False
 
     except Exception as e:
@@ -132,7 +137,8 @@ def remove_white_space(input_pdf, output_pdf):
         # To jest teraz prosta operacja przycinania
         trimmed_pdf = trim_pdf_to_content(input_pdf, output_pdf)
         if trimmed_pdf:
-            logger.info(f"Usunięto białą przestrzeń z PDF, zapisano do: {output_pdf}")
+            logger.info(
+                f"Usunięto białą przestrzeń z PDF, zapisano do: {output_pdf}")
             return True
         else:
             logger.warning("Nie udało się usunąć białej przestrzeni")
@@ -184,7 +190,8 @@ def html_to_pdf_continuous(html_file, pdf_file=None, page_width=4.0, margin=5, d
 
         if two_pass:
             # PIERWSZY PRZEBIEG - wygeneruj PDF z dużą wysokością
-            logger.info("Pierwszy przebieg - generowanie wstępnego PDF do analizy...")
+            logger.info(
+                "Pierwszy przebieg - generowanie wstępnego PDF do analizy...")
 
             # Użyj bardzo dużej wysokości dla pierwszego przebiegu
             first_pass_options = [
@@ -203,28 +210,35 @@ def html_to_pdf_continuous(html_file, pdf_file=None, page_width=4.0, margin=5, d
             ]
 
             temp_pdf = generate_temp_filename(prefix="first_pass")
-            success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, temp_pdf, first_pass_options)
+            success = run_wkhtmltopdf(
+                wkhtmltopdf_path, processed_html, temp_pdf, first_pass_options)
 
             if not success:
-                logger.warning("Pierwszy przebieg nie powiódł się, próbuję z prostszymi opcjami...")
+                logger.warning(
+                    "Pierwszy przebieg nie powiódł się, próbuję z prostszymi opcjami...")
                 first_pass_options = [
                     '--page-width', f'{page_width_mm}mm',
                     '--disable-smart-shrinking'
                 ]
-                success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, temp_pdf, first_pass_options)
+                success = run_wkhtmltopdf(
+                    wkhtmltopdf_path, processed_html, temp_pdf, first_pass_options)
 
             if success:
                 # Analizuj wygenerowany PDF, aby wykryć rzeczywistą wysokość zawartości
                 try:
-                    detected_height_mm = detect_content_height_from_pdf(temp_pdf)
-                    logger.info(f"Wykryta rzeczywista wysokość zawartości: {detected_height_mm:.2f}mm")
+                    detected_height_mm = detect_content_height_from_pdf(
+                        temp_pdf)
+                    logger.info(
+                        f"Wykryta rzeczywista wysokość zawartości: {detected_height_mm:.2f}mm")
 
                     # DRUGI PRZEBIEG - wygeneruj PDF z dokładnie określoną wysokością
-                    logger.info("Drugi przebieg - generowanie ostatecznego PDF z dokładną wysokością...")
+                    logger.info(
+                        "Drugi przebieg - generowanie ostatecznego PDF z dokładną wysokością...")
 
                     # Dodaj margines bezpieczeństwa do wykrytej wysokości (10%)
                     optimal_height_mm = detected_height_mm * 1.1
-                    logger.info(f"Używam wysokości z marginesem bezpieczeństwa: {optimal_height_mm:.2f}mm")
+                    logger.info(
+                        f"Używam wysokości z marginesem bezpieczeństwa: {optimal_height_mm:.2f}mm")
 
                     second_pass_options = [
                         '--page-width', f'{page_width_mm}mm',
@@ -243,7 +257,8 @@ def html_to_pdf_continuous(html_file, pdf_file=None, page_width=4.0, margin=5, d
                         '--no-outline'
                     ]
 
-                    success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, pdf_file, second_pass_options)
+                    success = run_wkhtmltopdf(
+                        wkhtmltopdf_path, processed_html, pdf_file, second_pass_options)
 
                     # Usuń tymczasowy plik z pierwszego przebiegu
                     try:
@@ -266,7 +281,8 @@ def html_to_pdf_continuous(html_file, pdf_file=None, page_width=4.0, margin=5, d
 
         # Standardowe podejście - użyj szacowanej wysokości na podstawie treści HTML
         estimated_height_mm = calculate_optimal_height(html_file)
-        logger.info(f"Używam szacowanej wysokości: {estimated_height_mm:.2f}mm")
+        logger.info(
+            f"Używam szacowanej wysokości: {estimated_height_mm:.2f}mm")
 
         continuous_options = [
             '--page-width', f'{page_width_mm}mm',
@@ -289,10 +305,12 @@ def html_to_pdf_continuous(html_file, pdf_file=None, page_width=4.0, margin=5, d
 
         # Najpierw spróbuj z opcjami dla ciągłego wydruku
         temp_pdf = generate_temp_filename()
-        success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, temp_pdf, continuous_options)
+        success = run_wkhtmltopdf(
+            wkhtmltopdf_path, processed_html, temp_pdf, continuous_options)
 
         if not success:
-            logger.info("Pierwszy sposób nie zadziałał, próbuję z prostszymi opcjami...")
+            logger.info(
+                "Pierwszy sposób nie zadziałał, próbuję z prostszymi opcjami...")
 
             # Jeśli nie zadziałało, spróbuj z minimalnymi opcjami
             minimal_options = [
@@ -305,13 +323,15 @@ def html_to_pdf_continuous(html_file, pdf_file=None, page_width=4.0, margin=5, d
                 '--margin-right', f'{margin}mm',
             ]
 
-            success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, temp_pdf, minimal_options)
+            success = run_wkhtmltopdf(
+                wkhtmltopdf_path, processed_html, temp_pdf, minimal_options)
 
             if not success:
                 logger.info("Próbuję z absolutnie minimalnymi opcjami...")
 
                 # Jeśli nadal nie zadziałało, spróbuj z absolutnie minimalnymi opcjami
-                success = run_wkhtmltopdf(wkhtmltopdf_path, processed_html, temp_pdf, [])
+                success = run_wkhtmltopdf(
+                    wkhtmltopdf_path, processed_html, temp_pdf, [])
 
                 if not success:
                     logger.error("Wszystkie metody konwersji nie powiodły się")
@@ -320,7 +340,8 @@ def html_to_pdf_continuous(html_file, pdf_file=None, page_width=4.0, margin=5, d
         # Sprawdź, czy PDF został wygenerowany i ma rozmiar większy od zera
         if os.path.exists(temp_pdf) and os.path.getsize(temp_pdf) > 0:
             logger.info(f"PDF wygenerowany pomyślnie: {temp_pdf}")
-            logger.info(f"Rozmiar pliku PDF: {os.path.getsize(temp_pdf) / 1024:.2f} KB")
+            logger.info(
+                f"Rozmiar pliku PDF: {os.path.getsize(temp_pdf) / 1024:.2f} KB")
 
             # Usuń białą przestrzeń z PDF
             remove_white_space(temp_pdf, pdf_file)
@@ -340,7 +361,8 @@ def html_to_pdf_continuous(html_file, pdf_file=None, page_width=4.0, margin=5, d
         try:
             if os.path.exists(processed_html):
                 os.unlink(processed_html)
-                logger.debug(f"Usunięto tymczasowy plik HTML: {processed_html}")
+                logger.debug(
+                    f"Usunięto tymczasowy plik HTML: {processed_html}")
         except:
             pass
 
@@ -360,7 +382,8 @@ def split_pdf_at_content_end(pdf_path, content_output_path=None, blank_output_pa
     try:
         # Ustaw domyślne ścieżki wyjściowe, jeśli nie podano
         if content_output_path is None:
-            content_output_path = os.path.splitext(pdf_path)[0] + "_content.pdf"
+            content_output_path = os.path.splitext(
+                pdf_path)[0] + "_content.pdf"
 
         if blank_output_path is None:
             blank_output_path = os.path.splitext(pdf_path)[0] + "_blank.pdf"
@@ -392,15 +415,24 @@ def parse_arguments():
         description='Konwersja HTML do ciągłego PDF z poprawioną obsługą plików'
     )
     parser.add_argument('input_file', help='Ścieżka do pliku HTML lub PDF')
-    parser.add_argument('-o', '--output', help='Ścieżka do pliku wyjściowego PDF')
-    parser.add_argument('--width', type=float, default=4.0, help='Szerokość strony w calach (domyślnie 4.0)')
-    parser.add_argument('--margin', type=int, default=5, help='Margines w milimetrach (domyślnie 5)')
-    parser.add_argument('--dpi', type=int, default=203, help='Rozdzielczość w DPI (domyślnie 203)')
-    parser.add_argument('--items', type=int, help='Liczba pozycji w dokumencie (opcjonalnie)')
-    parser.add_argument('--single-pass', action='store_true', help='Używaj tylko jednego przebiegu konwersji')
-    parser.add_argument('--split-pdf', action='store_true', help='Podziel PDF na treść i białą przestrzeń')
-    parser.add_argument('--trim-only', action='store_true', help='Tylko przytnij istniejący PDF bez konwersji HTML')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Wyświetlaj szczegółowe komunikaty')
+    parser.add_argument(
+        '-o', '--output', help='Ścieżka do pliku wyjściowego PDF')
+    parser.add_argument('--width', type=float, default=4.0,
+                        help='Szerokość strony w calach (domyślnie 4.0)')
+    parser.add_argument('--margin', type=int, default=5,
+                        help='Margines w milimetrach (domyślnie 5)')
+    parser.add_argument('--dpi', type=int, default=203,
+                        help='Rozdzielczość w DPI (domyślnie 203)')
+    parser.add_argument('--items', type=int,
+                        help='Liczba pozycji w dokumencie (opcjonalnie)')
+    parser.add_argument('--single-pass', action='store_true',
+                        help='Używaj tylko jednego przebiegu konwersji')
+    parser.add_argument('--split-pdf', action='store_true',
+                        help='Podziel PDF na treść i białą przestrzeń')
+    parser.add_argument('--trim-only', action='store_true',
+                        help='Tylko przytnij istniejący PDF bez konwersji HTML')
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help='Wyświetlaj szczegółowe komunikaty')
 
     return parser.parse_args()
 
@@ -432,7 +464,8 @@ def main():
 
         # Jeśli wybrano opcję przycinania i plik to PDF, użyj funkcji trim_existing_pdf
         if args.trim_only and is_pdf:
-            logger.info(f"Tryb przycinania istniejącego PDF: {args.input_file}")
+            logger.info(
+                f"Tryb przycinania istniejącego PDF: {args.input_file}")
 
             output_path = args.output if args.output else args.input_file
             result = trim_existing_pdf(args.input_file, output_path)
@@ -446,7 +479,8 @@ def main():
 
         # Jeśli to PDF, ale nie wybrano trybu przycinania, wyświetl informację
         if is_pdf and not args.trim_only:
-            logger.warning("Podano plik PDF jako wejściowy, ale nie wybrano trybu przycinania (--trim-only)")
+            logger.warning(
+                "Podano plik PDF jako wejściowy, ale nie wybrano trybu przycinania (--trim-only)")
             logger.warning("Przechodzę do przycinania istniejącego PDF...")
 
             output_path = args.output if args.output else args.input_file
@@ -463,7 +497,8 @@ def main():
         if args.items:
             logger.info(f"Używam podanej liczby pozycji: {args.items}")
             # Obliczmy i wyświetlmy optymalną wysokość
-            optimal_height = calculate_optimal_height(args.input_file, args.items)
+            optimal_height = calculate_optimal_height(
+                args.input_file, args.items)
             logger.info(f"Optymalna wysokość dokumentu: {optimal_height}mm")
 
         # Konwersja HTML do PDF
@@ -485,14 +520,16 @@ def main():
                 )
 
                 if content_height and content_path:
-                    logger.info(f"Podzielono PDF. Wysokość treści: {content_height:.2f}mm")
+                    logger.info(
+                        f"Podzielono PDF. Wysokość treści: {content_height:.2f}mm")
                     logger.info(f"Treść zapisana do: {content_path}")
                     logger.info(f"Biała przestrzeń zapisana do: {blank_path}")
 
                     # Użyj treści jako finalnego PDF
                     temp_pdf = content_path
                 else:
-                    logger.warning("Nie można podzielić PDF - używam pełnego dokumentu")
+                    logger.warning(
+                        "Nie można podzielić PDF - używam pełnego dokumentu")
             except Exception as e:
                 logger.error(f"Błąd podczas dzielenia PDF: {e}")
 
@@ -507,7 +544,8 @@ def main():
             default_output = os.path.splitext(args.input_file)[0] + '.pdf'
             final_pdf = pdf_to_final_location(temp_pdf, default_output)
 
-        logger.info(f"Konwersja zakończona pomyślnie. Wygenerowano plik: {final_pdf}")
+        logger.info(
+            f"Konwersja zakończona pomyślnie. Wygenerowano plik: {final_pdf}")
         return 0
 
     except Exception as e:
@@ -516,10 +554,6 @@ def main():
             import traceback
             traceback.print_exc()
         return 1
-
-
-import shutil
-import os
 
 
 def copy_pdf():
@@ -544,7 +578,6 @@ def copy_pdf():
     except Exception as e:
         print(f"An error occurred while copying the file: {e}")
         return False
-
 
 
 if __name__ == "__main__":

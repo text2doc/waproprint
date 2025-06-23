@@ -35,5 +35,3 @@ def move_to_printed2(file_path, printed_folder):
     except Exception as e:
         logging.error(f"Błąd podczas przenoszenia dokumentu: {str(e)}")
         return False
-
-

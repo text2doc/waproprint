@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import win32api
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 import win32print
 import tempfile
 import os
@@ -21,7 +24,8 @@ def print_zpl_as_image_to_windows(zpl_content, printer_name=None):
     # Use Labelary API to convert ZPL to PNG
     url = "http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/"
     headers = {"Accept": "image/png"}
-    response = requests.post(url, headers=headers, data=zpl_content.encode('utf-8'))
+    response = requests.post(url, headers=headers,
+                             data=zpl_content.encode('utf-8'))
 
     if response.status_code != 200:
         print(f"Error converting ZPL to image: {response.status_code}")
@@ -49,7 +53,8 @@ def print_zpl_as_image_to_windows(zpl_content, printer_name=None):
 
         # Convert the image to a DIB and print it
         dib = ImageWin.Dib(img)
-        dib.draw(hDC.GetHandleOutput(), (0, 0, printer_size[0], printer_size[1]))
+        dib.draw(hDC.GetHandleOutput(),
+                 (0, 0, printer_size[0], printer_size[1]))
 
         # Finish the print job
         hDC.EndPage()
@@ -62,7 +67,6 @@ def print_zpl_as_image_to_windows(zpl_content, printer_name=None):
     finally:
         # Clean up the temporary file
         os.unlink(temp_file.name)
-
 
 
 def print_zpl_to_windows_printer(zpl_content, printer_name=None):
@@ -81,7 +85,8 @@ def print_zpl_to_windows_printer(zpl_content, printer_name=None):
         handle = win32print.OpenPrinter(printer_name)
         try:
             # Start a document
-            job = win32print.StartDocPrinter(handle, 1, ("ZPL Document", None, "RAW"))
+            job = win32print.StartDocPrinter(
+                handle, 1, ("ZPL Document", None, "RAW"))
             try:
                 # Start a page
                 win32print.StartPagePrinter(handle)
@@ -106,14 +111,6 @@ def print_zpl_to_windows_printer(zpl_content, printer_name=None):
     finally:
         # Clean up the temporary file
         os.unlink(temp_file.name)
-
-
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-import win32print
-import win32api
-import tempfile
-import os
 
 
 def create_label_pdf(output_path):
@@ -167,6 +164,7 @@ def printaspdf(zpl_content):
     time.sleep(5)
     os.unlink(temp_file.name)
 
+
 # Your ZPL content
 zpl_content = """^XA
 ^CI28
@@ -181,7 +179,7 @@ zpl_content = """^XA
 ^XZ"""
 
 # Print to the default Windows printer
-#print_zpl_to_windows_printer(zpl_content)
+# print_zpl_to_windows_printer(zpl_content)
 # Print to the default Windows printer as an image
 print_zpl_as_image_to_windows(zpl_content)
 

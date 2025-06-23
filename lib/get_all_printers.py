@@ -9,6 +9,7 @@ import subprocess
 import re
 import logging
 
+
 def get_all_printers():
     """Pobiera listę wszystkich drukarek zainstalowanych w systemie"""
     try:
@@ -25,6 +26,7 @@ def get_all_printers():
     except Exception as e:
         logging.error(f"Błąd podczas pobierania listy drukarek: {str(e)}")
         return []
+
 
 def get_all_printers2():
     """Pobiera listę wszystkich dostępnych drukarek"""

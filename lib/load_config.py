@@ -6,11 +6,13 @@ import logging
 import os.path
 from lib import check_environment, check_pdf_file, check_printer_queue, get_default_printer, print_document, move_to_printed, print_with_adobe
 
+
 def load_config():
     """Wczytuje konfigurację z pliku config.ini"""
     try:
         config = configparser.ConfigParser()
-        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.ini')
+        config_path = os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), 'config.ini')
         logging.info(f"Wczytywanie konfiguracji z: {config_path}")
 
         if not os.path.exists(config_path):

@@ -44,7 +44,8 @@ def html_to_zpl(html_file, label_width):
     # Extract order data
     order_number = soup.find("div", class_="title").text.strip() if soup.find("div",
                                                                               class_="title") else "Unknown Order"
-    order_date = soup.find("div", class_="date").text.strip() if soup.find("div", class_="date") else ""
+    order_date = soup.find("div", class_="date").text.strip(
+    ) if soup.find("div", class_="date") else ""
 
     # Extract client information
     client_rows = soup.find_all("div", class_="client-row")
@@ -53,7 +54,8 @@ def html_to_zpl(html_file, label_width):
         label_div = row.find("div", class_="client-label")
         if label_div:
             label = label_div.text.strip()
-            value = label_div.find_next_sibling("div").text.strip() if label_div.find_next_sibling("div") else ""
+            value = label_div.find_next_sibling("div").text.strip(
+            ) if label_div.find_next_sibling("div") else ""
             client_info[label] = value
 
     # Extract items from table
@@ -124,9 +126,12 @@ def html_to_zpl(html_file, label_width):
     for i, item in enumerate(items, 1):
         zpl.append(f"^FO20,{y_pos}^A0N,20,20^FD{i}^FS")
         zpl.append(f"^FO60,{y_pos}^A0N,20,20^FD{item['name']}^FS")
-        zpl.append(f"^FO{label_width - 300},{y_pos}^A0N,20,20^FD{item['quantity']} {item['unit']}^FS")
-        zpl.append(f"^FO{label_width - 200},{y_pos}^A0N,20,20^FD{item['price']}^FS")
-        zpl.append(f"^FO{label_width - 100},{y_pos}^A0N,20,20^FD{item['value']}^FS")
+        zpl.append(
+            f"^FO{label_width - 300},{y_pos}^A0N,20,20^FD{item['quantity']} {item['unit']}^FS")
+        zpl.append(
+            f"^FO{label_width - 200},{y_pos}^A0N,20,20^FD{item['price']}^FS")
+        zpl.append(
+            f"^FO{label_width - 100},{y_pos}^A0N,20,20^FD{item['value']}^FS")
         y_pos += 25
 
     # Horizontal line
@@ -175,7 +180,8 @@ def print_to_zebra(zpl_data, printer_name, port=9100):
             hPrinter = win32print.OpenPrinter(printer_name)
             try:
                 # Start a document
-                hJob = win32print.StartDocPrinter(hPrinter, 1, ("ZPL Document", None, "RAW"))
+                hJob = win32print.StartDocPrinter(
+                    hPrinter, 1, ("ZPL Document", None, "RAW"))
                 try:
                     # Start a page
                     win32print.StartPagePrinter(hPrinter)
@@ -203,8 +209,10 @@ def print_to_zebra(zpl_data, printer_name, port=9100):
         # Check if printer_name looks like an IP address
         ip_pattern = r'^\d+\.\d+\.\d+\.\d+$'
         if not re.match(ip_pattern, printer_name):
-            print(f"Warning: '{printer_name}' doesn't look like an IP address. Socket printer may fail.")
-            print("If this is a local printer, try installing the win32print module: pip install pywin32")
+            print(
+                f"Warning: '{printer_name}' doesn't look like an IP address. Socket printer may fail.")
+            print(
+                "If this is a local printer, try installing the win32print module: pip install pywin32")
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((printer_name, port))
@@ -217,19 +225,24 @@ def print_to_zebra(zpl_data, printer_name, port=9100):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Print HTML order to ZPL format')
+    parser = argparse.ArgumentParser(
+        description='Print HTML order to ZPL format')
     parser.add_argument('html_file', help='Path to HTML file')
     parser.add_argument('printer_name', help='Printer name or IP address')
-    parser.add_argument('--width', type=int, default=800, help='Label width in dots (default: 800)')
+    parser.add_argument('--width', type=int, default=800,
+                        help='Label width in dots (default: 800)')
     parser.add_argument('--save', action='store_true', help='Save ZPL to file')
-    parser.add_argument('--port', type=int, default=9100, help='Printer port (default: 9100)')
-    parser.add_argument('--list-printers', action='store_true', help='List available Windows printers and exit')
+    parser.add_argument('--port', type=int, default=9100,
+                        help='Printer port (default: 9100)')
+    parser.add_argument('--list-printers', action='store_true',
+                        help='List available Windows printers and exit')
     args = parser.parse_args()
 
     # List printers if requested
     if args.list_printers:
         if WINDOWS_PRINTING:
-            printers = win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)
+            printers = win32print.EnumPrinters(
+                win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)
             print("Available printers:")
             for printer in printers:
                 print(f" - {printer[2]}")
@@ -254,7 +267,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
 # python html2zpl2print.py zamowienie.html "ZDesigner GK420d" --width 300 --save

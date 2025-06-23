@@ -40,7 +40,8 @@ def get_logger(filename=None, format=None):
     script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     # Określ nazwę pliku logów
-    log_filename = filename if filename else os.path.join(script_dir, 'app.log')
+    log_filename = filename if filename else os.path.join(
+        script_dir, 'app.log')
 
     # Określ format logów
     log_format = format if format else '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -49,7 +50,8 @@ def get_logger(filename=None, format=None):
     formatter = logging.Formatter(log_format)
 
     # Handler do pliku
-    file_handler = logging.FileHandler(log_filename, encoding='utf-8', mode='a')
+    file_handler = logging.FileHandler(
+        log_filename, encoding='utf-8', mode='a')
     file_handler.setFormatter(formatter)
 
     # Handler do konsoli
@@ -110,7 +112,8 @@ def set_log_level(level):
     for handler in logging.root.handlers:
         handler.setLevel(level)
 
-    logging.info(f"Zmieniono poziom logowania na: {logging.getLevelName(level)}")
+    logging.info(
+        f"Zmieniono poziom logowania na: {logging.getLevelName(level)}")
 
 
 # Inicjalizacja domyślnego loggera
